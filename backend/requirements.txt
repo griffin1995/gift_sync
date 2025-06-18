@@ -34,10 +34,13 @@ pandas==2.1.3
 numpy==1.25.2
 scipy==1.11.4
 
-# AWS SDK
-boto3==1.34.0
-aioboto3==12.0.0
-botocore==1.34.0
+# Object Storage (MinIO - S3 Compatible)
+minio==7.2.0
+
+# AWS SDK (Optional - for future cloud migration)
+# boto3==1.34.0
+# aioboto3==12.0.0
+# botocore==1.34.0
 
 # Background Tasks
 celery==5.3.4
@@ -62,7 +65,6 @@ rich==13.7.0
 pytest==7.4.3
 pytest-asyncio==0.21.1
 pytest-cov==4.1.0
-httpx==0.25.2
 factory-boy==3.3.0
 
 # Development
@@ -72,8 +74,8 @@ flake8==6.1.0
 mypy==1.7.1
 pre-commit==3.6.0
 
-# API Documentation
-fastapi[all]==0.104.1
+# API Documentation (already included above)
+# fastapi[all]==0.104.1
 
 # Email
 fastapi-mail==1.4.1
