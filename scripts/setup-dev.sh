@@ -1,376 +1,177 @@
 #!/bin/bash
+set -e
 
-# GiftSync Development Environment Setup Script
-# This script sets up the complete development environment for GiftSync
+# GiftSync Development Setup Script
+# This script sets up the local development environment with cost-effective services
 
-set -euo pipefail
+echo "🎁 GiftSync Development Setup"
+echo "=============================="
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "❌ Docker is not installed. Please install Docker first:"
+    echo "   - Mac: https://docs.docker.com/desktop/mac/install/"
+    echo "   - Windows: https://docs.docker.com/desktop/windows/install/"
+    echo "   - Linux: https://docs.docker.com/engine/install/"
+    exit 1
+fi
 
-# Configuration
-PROJECT_NAME="GiftSync"
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DOCKER_COMPOSE_FILE="$PROJECT_DIR/docker-compose.yml"
+# Check if Docker Compose is available
+if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+    echo "❌ Docker Compose is not installed. Please install Docker Compose."
+    exit 1
+fi
 
-# Functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
+# Determine docker compose command
+if command -v docker-compose &> /dev/null; then
+    DC_CMD="docker-compose"
+else
+    DC_CMD="docker compose"
+fi
 
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
+echo "✅ Docker is installed"
 
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
+# Create .env file if it doesn't exist
+if [ ! -f .env ]; then
+    echo "📝 Creating .env file from development template..."
+    cp .env.development .env
+    echo "✅ Created .env file - you can customize it later"
+else
+    echo "✅ .env file already exists"
+fi
 
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
+# Create required directories
+echo "📁 Creating required directories..."
+mkdir -p database/init
+mkdir -p ml/models
+mkdir -p ml/data
+mkdir -p infrastructure/nginx
+mkdir -p infrastructure/monitoring
+mkdir -p backend/app/logs
+mkdir -p web/public/uploads
+echo "✅ Directories created"
 
-check_command() {
-    if command -v "$1" >/dev/null 2>&1; then
-        log_success "$1 is installed"
-        return 0
-    else
-        log_error "$1 is not installed"
-        return 1
+# Stop any existing containers
+echo "🛑 Stopping existing containers..."
+$DC_CMD down 2>/dev/null || true
+
+# Pull latest images
+echo "📥 Pulling Docker images..."
+$DC_CMD pull
+
+# Build custom images
+echo "🔨 Building application containers..."
+$DC_CMD build
+
+# Start core services
+echo "🚀 Starting core services (PostgreSQL, Redis, MinIO)..."
+$DC_CMD up -d postgres redis minio
+
+# Wait for services to be healthy
+echo "⏳ Waiting for services to be ready..."
+sleep 10
+
+# Check PostgreSQL
+echo "🔍 Checking PostgreSQL connection..."
+max_attempts=30
+attempt=1
+while [ $attempt -le $max_attempts ]; do
+    if $DC_CMD exec postgres pg_isready -U giftsync >/dev/null 2>&1; then
+        echo "✅ PostgreSQL is ready"
+        break
     fi
-}
-
-install_docker() {
-    log_info "Installing Docker..."
-    
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Update package index
-        sudo apt-get update
-        
-        # Install required packages
-        sudo apt-get install -y \
-            apt-transport-https \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release
-        
-        # Add Docker's official GPG key
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-        
-        # Set up stable repository
-        echo \
-            "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        
-        # Install Docker Engine
-        sudo apt-get update
-        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-        
-        # Add user to docker group
-        sudo usermod -aG docker $USER
-        
-        log_success "Docker installed successfully"
-        log_warning "Please log out and log back in for Docker group changes to take effect"
-        
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        log_info "Please install Docker Desktop for macOS from https://docker.com/products/docker-desktop"
-        
-    else
-        log_error "Unsupported operating system: $OSTYPE"
+    if [ $attempt -eq $max_attempts ]; then
+        echo "❌ PostgreSQL failed to start after $max_attempts attempts"
+        $DC_CMD logs postgres
         exit 1
     fi
-}
+    echo "   Attempt $attempt/$max_attempts - waiting for PostgreSQL..."
+    sleep 2
+    ((attempt++))
+done
 
-install_flutter() {
-    log_info "Installing Flutter..."
-    
-    FLUTTER_VERSION="3.16.0"
-    FLUTTER_DIR="$HOME/flutter"
-    
-    if [[ ! -d "$FLUTTER_DIR" ]]; then
-        # Download Flutter
-        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            FLUTTER_URL="https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            FLUTTER_URL="https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_${FLUTTER_VERSION}-stable.zip"
-        fi
-        
-        log_info "Downloading Flutter $FLUTTER_VERSION..."
-        cd "$HOME"
-        
-        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            curl -O "$FLUTTER_URL"
-            tar xf "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-            rm "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            curl -O "$FLUTTER_URL"
-            unzip "flutter_macos_${FLUTTER_VERSION}-stable.zip"
-            rm "flutter_macos_${FLUTTER_VERSION}-stable.zip"
-        fi
-    fi
-    
-    # Add Flutter to PATH
-    if ! grep -q "flutter/bin" ~/.bashrc; then
-        echo 'export PATH="$PATH:$HOME/flutter/bin"' >> ~/.bashrc
-        log_info "Added Flutter to PATH in ~/.bashrc"
-    fi
-    
-    if ! grep -q "flutter/bin" ~/.zshrc 2>/dev/null; then
-        echo 'export PATH="$PATH:$HOME/flutter/bin"' >> ~/.zshrc
-        log_info "Added Flutter to PATH in ~/.zshrc"
-    fi
-    
-    # Update current session PATH
-    export PATH="$PATH:$HOME/flutter/bin"
-    
-    log_success "Flutter installed successfully"
-}
+# Check Redis
+echo "🔍 Checking Redis connection..."
+if $DC_CMD exec redis redis-cli ping >/dev/null 2>&1; then
+    echo "✅ Redis is ready"
+else
+    echo "❌ Redis failed to start"
+    $DC_CMD logs redis
+    exit 1
+fi
 
-install_python_deps() {
-    log_info "Setting up Python virtual environment..."
-    
-    cd "$PROJECT_DIR/backend"
-    
-    # Create virtual environment if it doesn't exist
-    if [[ ! -d "venv" ]]; then
-        python3 -m venv venv
-        log_success "Created Python virtual environment"
+# Check MinIO
+echo "🔍 Checking MinIO connection..."
+attempt=1
+while [ $attempt -le 15 ]; do
+    if curl -f http://localhost:9000/minio/health/live >/dev/null 2>&1; then
+        echo "✅ MinIO is ready"
+        break
     fi
-    
-    # Activate virtual environment and install dependencies
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    
-    log_success "Python dependencies installed"
-}
-
-setup_environment_files() {
-    log_info "Setting up environment files..."
-    
-    # Backend .env file
-    BACKEND_ENV_FILE="$PROJECT_DIR/backend/.env"
-    if [[ ! -f "$BACKEND_ENV_FILE" ]]; then
-        cat > "$BACKEND_ENV_FILE" << EOF
-# Development Environment Configuration
-ENVIRONMENT=development
-DEBUG=true
-
-# Database
-DATABASE_URL=postgresql://giftsync:giftsync_dev_password@localhost:5432/giftsync_dev
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Security
-SECRET_KEY=your-secret-key-change-in-production
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# AWS (LocalStack for development)
-AWS_ENDPOINT_URL=http://localhost:4566
-AWS_ACCESS_KEY_ID=test
-AWS_SECRET_ACCESS_KEY=test
-AWS_DEFAULT_REGION=eu-west-2
-S3_BUCKET_NAME=giftsync-assets-dev
-
-# External APIs
-MIXPANEL_TOKEN=your-mixpanel-token
-AMAZON_ASSOCIATE_TAG=your-amazon-tag
-
-# Feature Flags
-ENABLE_REGISTRATION=true
-ENABLE_SOCIAL_LOGIN=true
-ENABLE_ML_RECOMMENDATIONS=true
-
-# Rate Limiting
-RATE_LIMIT_PER_MINUTE=60
-EOF
-        log_success "Created backend .env file"
-    else
-        log_info "Backend .env file already exists"
-    fi
-    
-    # Mobile .env file
-    MOBILE_ENV_FILE="$PROJECT_DIR/mobile/.env"
-    if [[ ! -f "$MOBILE_ENV_FILE" ]]; then
-        cat > "$MOBILE_ENV_FILE" << EOF
-# Mobile App Configuration
-API_BASE_URL=http://localhost:8000
-MIXPANEL_TOKEN=your-mixpanel-token
-FIREBASE_PROJECT_ID=giftsync-dev
-EOF
-        log_success "Created mobile .env file"
-    else
-        log_info "Mobile .env file already exists"
-    fi
-}
-
-start_services() {
-    log_info "Starting development services..."
-    
-    cd "$PROJECT_DIR"
-    
-    # Start services with Docker Compose
-    docker-compose up -d postgres redis localstack
-    
-    # Wait for services to be ready
-    log_info "Waiting for services to start..."
-    sleep 10
-    
-    # Check if services are running
-    if docker-compose ps | grep -q "postgres.*Up"; then
-        log_success "PostgreSQL is running"
-    else
-        log_error "PostgreSQL failed to start"
-    fi
-    
-    if docker-compose ps | grep -q "redis.*Up"; then
-        log_success "Redis is running"
-    else
-        log_error "Redis failed to start"
-    fi
-    
-    if docker-compose ps | grep -q "localstack.*Up"; then
-        log_success "LocalStack is running"
-    else
-        log_error "LocalStack failed to start"
-    fi
-}
-
-run_database_migrations() {
-    log_info "Running database migrations..."
-    
-    cd "$PROJECT_DIR/backend"
-    source venv/bin/activate
-    
-    # Generate initial migration
-    alembic revision --autogenerate -m "Initial migration"
-    
-    # Run migrations
-    alembic upgrade head
-    
-    log_success "Database migrations completed"
-}
-
-setup_flutter_project() {
-    log_info "Setting up Flutter project..."
-    
-    cd "$PROJECT_DIR/mobile"
-    
-    # Get Flutter dependencies
-    flutter pub get
-    
-    # Generate code
-    flutter packages pub run build_runner build
-    
-    log_success "Flutter project setup completed"
-}
-
-print_next_steps() {
-    log_success "Development environment setup completed!"
-    echo
-    echo -e "${BLUE}Next steps:${NC}"
-    echo "1. Start the backend API:"
-    echo "   cd backend && source venv/bin/activate && uvicorn app.main:app --reload"
-    echo
-    echo "2. Start the Flutter app:"
-    echo "   cd mobile && flutter run"
-    echo
-    echo "3. Access the API documentation:"
-    echo "   http://localhost:8000/docs"
-    echo
-    echo "4. View running services:"
-    echo "   docker-compose ps"
-    echo
-    echo "5. View logs:"
-    echo "   docker-compose logs -f [service-name]"
-    echo
-    echo -e "${BLUE}Useful commands:${NC}"
-    echo "- Stop services: docker-compose down"
-    echo "- Restart services: docker-compose restart"
-    echo "- View API logs: docker-compose logs -f backend"
-    echo "- Access database: docker-compose exec postgres psql -U giftsync -d giftsync_dev"
-    echo
-}
-
-main() {
-    log_info "Setting up $PROJECT_NAME development environment..."
-    echo
-    
-    # Check prerequisites
-    log_info "Checking prerequisites..."
-    
-    MISSING_DEPS=()
-    
-    if ! check_command "python3"; then
-        MISSING_DEPS+=("python3")
-    fi
-    
-    if ! check_command "pip3"; then
-        MISSING_DEPS+=("pip3")
-    fi
-    
-    if ! check_command "curl"; then
-        MISSING_DEPS+=("curl")
-    fi
-    
-    if ! check_command "git"; then
-        MISSING_DEPS+=("git")
-    fi
-    
-    # Install Docker if not present
-    if ! check_command "docker"; then
-        if [[ "${1:-}" == "--install-docker" ]]; then
-            install_docker
-        else
-            MISSING_DEPS+=("docker")
-        fi
-    fi
-    
-    if ! check_command "docker-compose" && ! docker compose version >/dev/null 2>&1; then
-        MISSING_DEPS+=("docker-compose")
-    fi
-    
-    if [[ ${#MISSING_DEPS[@]} -gt 0 ]]; then
-        log_error "Missing dependencies: ${MISSING_DEPS[*]}"
-        echo
-        echo "Please install the missing dependencies and run this script again."
-        echo "To automatically install Docker, run: $0 --install-docker"
+    if [ $attempt -eq 15 ]; then
+        echo "❌ MinIO failed to start after 15 attempts"
+        $DC_CMD logs minio
         exit 1
     fi
-    
-    # Install Flutter if not present
-    if ! check_command "flutter"; then
-        install_flutter
-    fi
-    
-    # Setup project
-    setup_environment_files
-    install_python_deps
-    start_services
-    run_database_migrations
-    setup_flutter_project
-    
-    print_next_steps
-}
+    echo "   Attempt $attempt/15 - waiting for MinIO..."
+    sleep 2
+    ((attempt++))
+done
 
-# Handle command line arguments
-case "${1:-}" in
-    --help|-h)
-        echo "Usage: $0 [--install-docker] [--help]"
-        echo
-        echo "Options:"
-        echo "  --install-docker  Automatically install Docker"
-        echo "  --help, -h        Show this help message"
-        exit 0
-        ;;
-    *)
-        main "$@"
-        ;;
-esac
+# Create MinIO bucket
+echo "🪣 Creating MinIO bucket..."
+$DC_CMD exec minio mc alias set local http://localhost:9000 giftsync giftsync_dev_password >/dev/null 2>&1 || true
+$DC_CMD exec minio mc mb local/giftsync-dev >/dev/null 2>&1 || echo "   Bucket already exists"
+
+# Set up database schema (if init scripts exist)
+if [ -f "database/init/01_schema.sql" ]; then
+    echo "🗄️  Setting up database schema..."
+    $DC_CMD exec -T postgres psql -U giftsync -d giftsync_dev < database/init/01_schema.sql
+    echo "✅ Database schema created"
+fi
+
+# Start backend service
+echo "🚀 Starting backend API..."
+$DC_CMD up -d backend
+
+# Wait for backend to be ready
+echo "⏳ Waiting for backend API..."
+attempt=1
+while [ $attempt -le 20 ]; do
+    if curl -f http://localhost:8000/health >/dev/null 2>&1; then
+        echo "✅ Backend API is ready"
+        break
+    fi
+    if [ $attempt -eq 20 ]; then
+        echo "⚠️  Backend API not responding - check logs with: $DC_CMD logs backend"
+    fi
+    echo "   Attempt $attempt/20 - waiting for backend..."
+    sleep 3
+    ((attempt++))
+done
+
+echo ""
+echo "🎉 Development environment is ready!"
+echo ""
+echo "📋 Available services:"
+echo "   • PostgreSQL:     localhost:5432 (user: giftsync, db: giftsync_dev)"
+echo "   • Redis:          localhost:6379"
+echo "   • MinIO:          localhost:9000 (admin: localhost:9001)"
+echo "   • Backend API:    localhost:8000"
+echo "   • API Docs:       http://localhost:8000/docs"
+echo ""
+echo "🔧 Useful commands:"
+echo "   • View logs:      $DC_CMD logs [service]"
+echo "   • Stop all:       $DC_CMD down"
+echo "   • Restart:        $DC_CMD restart [service]"
+echo "   • Database shell: $DC_CMD exec postgres psql -U giftsync -d giftsync_dev"
+echo "   • Redis shell:    $DC_CMD exec redis redis-cli"
+echo ""
+echo "📝 Next steps:"
+echo "   1. Set up your external service accounts (see SETUP_REQUIREMENTS.md)"
+echo "   2. Add API keys to .env file"
+echo "   3. Test the API: curl http://localhost:8000/health"
+echo ""
+echo "🔗 MinIO Console: http://localhost:9001"
+echo "   Username: giftsync"
+echo "   Password: giftsync_dev_password"
