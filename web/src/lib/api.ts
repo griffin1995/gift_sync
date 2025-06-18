@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { config, endpoints } from '@/config';
+import { config, endpoints, appConfig } from '@/config';
 import { 
   ApiResponse, 
   PaginatedResponse, 
@@ -43,8 +43,8 @@ class TokenManager {
     this.refreshToken = refreshToken;
     
     if (typeof window !== 'undefined') {
-      localStorage.setItem(config.storage.authToken, accessToken);
-      localStorage.setItem(config.storage.refreshToken, refreshToken);
+      localStorage.setItem(appConfig.storage.authToken, accessToken);
+      localStorage.setItem(appConfig.storage.refreshToken, refreshToken);
     }
   }
 
@@ -52,7 +52,7 @@ class TokenManager {
     if (this.accessToken) return this.accessToken;
     
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(config.storage.authToken);
+      return localStorage.getItem(appConfig.storage.authToken);
     }
     
     return null;
@@ -62,7 +62,7 @@ class TokenManager {
     if (this.refreshToken) return this.refreshToken;
     
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(config.storage.refreshToken);
+      return localStorage.getItem(appConfig.storage.refreshToken);
     }
     
     return null;
@@ -73,9 +73,9 @@ class TokenManager {
     this.refreshToken = null;
     
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(config.storage.authToken);
-      localStorage.removeItem(config.storage.refreshToken);
-      localStorage.removeItem(config.storage.user);
+      localStorage.removeItem(appConfig.storage.authToken);
+      localStorage.removeItem(appConfig.storage.refreshToken);
+      localStorage.removeItem(appConfig.storage.user);
     }
   }
 }
@@ -188,7 +188,7 @@ class ApiClient {
 
   private handleError(error: any): ApiError {
     const apiError: ApiError = {
-      message: config.errors.unknown,
+      message: appConfig.errors.unknown,
       code: 'UNKNOWN_ERROR',
       status: 500,
       timestamp: new Date().toISOString(),
@@ -202,12 +202,12 @@ class ApiClient {
       apiError.details = error.response.data?.details;
     } else if (error.request) {
       // Network error
-      apiError.message = config.errors.network;
+      apiError.message = appConfig.errors.network;
       apiError.code = 'NETWORK_ERROR';
       apiError.status = 0;
     } else {
       // Request setup error
-      apiError.message = error.message || config.errors.unknown;
+      apiError.message = error.message || appConfig.errors.unknown;
       apiError.code = 'REQUEST_ERROR';
     }
 
@@ -217,17 +217,17 @@ class ApiClient {
   private getErrorMessageByStatus(status: number): string {
     switch (status) {
       case 400:
-        return config.errors.validation;
+        return appConfig.errors.validation;
       case 401:
-        return config.errors.unauthorized;
+        return appConfig.errors.unauthorized;
       case 403:
-        return config.errors.forbidden;
+        return appConfig.errors.forbidden;
       case 404:
-        return config.errors.notFound;
+        return appConfig.errors.notFound;
       case 500:
-        return config.errors.server;
+        return appConfig.errors.server;
       default:
-        return config.errors.unknown;
+        return appConfig.errors.unknown;
     }
   }
 
