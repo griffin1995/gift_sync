@@ -1,6 +1,7 @@
 import os
 from typing import List, Optional
-from pydantic import BaseSettings, validator
+from pydantic import field_validator
+from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
@@ -79,6 +80,11 @@ class Settings(BaseSettings):
     SENTRY_DSN: Optional[str] = None
     PROMETHEUS_ENABLED: bool = True
     
+    # Supabase
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_ANON_KEY: Optional[str] = None
+    SUPABASE_SERVICE_KEY: Optional[str] = None
+    
     # Feature Flags
     ENABLE_REGISTRATION: bool = True
     ENABLE_SOCIAL_LOGIN: bool = True
@@ -94,21 +100,24 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 10
     ALLOWED_FILE_TYPES: List[str] = ["image/jpeg", "image/png", "image/webp"]
     
-    @validator("ALLOWED_HOSTS", pre=True)
+    @field_validator("ALLOWED_HOSTS", mode="before")
+    @classmethod
     def parse_allowed_hosts(cls, v):
         if isinstance(v, str):
             return [host.strip() for host in v.split(",")]
         return v
     
-    @validator("DEBUG", pre=True)
+    @field_validator("DEBUG", mode="before")
+    @classmethod
     def parse_debug(cls, v):
         if isinstance(v, str):
             return v.lower() in ("true", "1", "yes", "on")
         return v
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True
+    }
 
 
 @lru_cache()
