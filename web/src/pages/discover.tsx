@@ -1,18 +1,82 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { motion } from 'framer-motion';
-import { SwipeInterface } from '@/components/swipe/SwipeInterface';
-import { Gift, ArrowLeft, Settings, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { EnhancedSwipeCard } from '@/components/swipe/EnhancedSwipeCard';
+import { LoadingCard, LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Gift, ArrowLeft, Settings, Info, Sparkles, Heart, Zap } from 'lucide-react';
 import { SwipeSession } from '@/types';
 import { tokenManager } from '@/lib/api';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
+// Sample product data for demo
+const sampleProducts = [
+  {
+    id: '1',
+    title: 'Wireless Bluetooth Headphones',
+    description: 'Premium noise-cancelling headphones with 30-hour battery life and crystal-clear audio quality.',
+    price: 79.99,
+    imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop',
+    rating: 4.8,
+    category: 'Electronics',
+    brand: 'AudioTech',
+    features: ['Noise Cancelling', '30hr Battery', 'Wireless'],
+  },
+  {
+    id: '2',
+    title: 'Artisan Coffee Blend Gift Set',
+    description: 'A curated collection of premium coffee beans from around the world, perfect for coffee enthusiasts.',
+    price: 45.00,
+    imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&h=300&fit=crop',
+    rating: 4.9,
+    category: 'Food & Drink',
+    brand: 'RoastMaster',
+    features: ['Premium Beans', 'Gift Box', 'Fair Trade'],
+  },
+  {
+    id: '3',
+    title: 'Smart Fitness Watch',
+    description: 'Track your health and fitness goals with this advanced smartwatch featuring heart rate monitoring.',
+    price: 199.99,
+    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop',
+    rating: 4.6,
+    category: 'Electronics',
+    brand: 'FitTech',
+    features: ['Heart Monitor', 'GPS', 'Waterproof'],
+  },
+  {
+    id: '4',
+    title: 'Luxury Skincare Set',
+    description: 'Pamper yourself or a loved one with this premium skincare collection featuring natural ingredients.',
+    price: 89.99,
+    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=300&fit=crop',
+    rating: 4.7,
+    category: 'Beauty',
+    brand: 'GlowLux',
+    features: ['Natural', 'Anti-Aging', 'Gift Set'],
+  },
+  {
+    id: '5',
+    title: 'Succulent Garden Kit',
+    description: 'Everything you need to start your own beautiful succulent garden, including pots and soil.',
+    price: 32.50,
+    imageUrl: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400&h=300&fit=crop',
+    rating: 4.5,
+    category: 'Home & Garden',
+    brand: 'GreenThumb',
+    features: ['Complete Kit', 'Easy Care', 'Decorative'],
+  },
+];
+
 export default function DiscoverPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [currentProducts, setCurrentProducts] = useState(sampleProducts);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [swipeCount, setSwipeCount] = useState(0);
 
   // Check authentication status
   useEffect(() => {
@@ -27,9 +91,34 @@ export default function DiscoverPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Handle swipe action
+  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
+    const currentProduct = currentProducts[currentIndex];
+    setSwipeCount(prev => prev + 1);
+    
+    // Show feedback based on swipe direction
+    if (direction === 'right') {
+      toast.success(`❤️ Added ${currentProduct.title} to your likes!`);
+    } else if (direction === 'up') {
+      toast.success(`⚡ Super liked ${currentProduct.title}!`);
+    } else {
+      toast(`👍 Thanks for the feedback!`);
+    }
+    
+    // Move to next product
+    setTimeout(() => {
+      if (currentIndex < currentProducts.length - 1) {
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        // Session complete
+        handleSessionComplete();
+      }
+    }, 300);
+  };
+
   // Handle session completion
-  const handleSessionComplete = (session: SwipeSession) => {
-    toast.success('Great job! Your session is complete.');
+  const handleSessionComplete = () => {
+    toast.success('🎉 Great job! Your session is complete.');
     
     if (isAuthenticated) {
       // Redirect to recommendations page
