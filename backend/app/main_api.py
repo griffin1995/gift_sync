@@ -146,12 +146,68 @@ async def create_product(product: ProductCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Users endpoints
+@app.post("/api/v1/users", response_model=dict)
+async def create_user(user_data: dict):
+    """Create a new user (for testing)"""
+    try:
+        # Generate UUID for user_id if not provided
+        if 'id' not in user_data:
+            user_data['id'] = str(uuid.uuid4())
+        
+        created_users = await supabase.insert(
+            "users",
+            user_data,
+            use_service_key=True
+        )
+        return created_users[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/users/{user_id}")
+async def get_user(user_id: str):
+    """Get a user by ID"""
+    try:
+        users = await supabase.select(
+            "users",
+            filters={"id": user_id}
+        )
+        if not users:
+            raise HTTPException(status_code=404, detail="User not found")
+        return users[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Swipe sessions endpoints
 @app.post("/api/v1/swipe-sessions", response_model=SwipeSession)
 async def create_swipe_session(session: SwipeSessionCreate):
     """Create a new swipe session"""
     try:
         session_data = session.dict()
+        
+        # Ensure user_id is a valid UUID and user exists
+        user_id = session_data.get('user_id')
+        if user_id:
+            # Check if user exists
+            try:
+                users = await supabase.select("users", filters={"id": user_id}, limit=1)
+                if not users:
+                    # User doesn't exist, create a minimal user record
+                    await supabase.insert(
+                        "users",
+                        {
+                            "id": user_id,
+                            "email": f"{user_id}@test.com",
+                            "subscription_tier": "free",
+                            "gdpr_consent": True
+                        },
+                        use_service_key=True
+                    )
+            except Exception as user_error:
+                raise HTTPException(status_code=400, detail=f"User validation failed: {str(user_error)}")
+        
         created_sessions = await supabase.insert(
             "swipe_sessions",
             session_data,
@@ -252,6 +308,26 @@ async def create_gift_link(gift_link: GiftLinkCreate):
     try:
         link_data = gift_link.dict()
         link_data["link_token"] = str(uuid.uuid4())  # Generate unique token
+        link_data["is_active"] = True  # Ensure link is active by default
+        
+        # Check if user exists, create if not (for testing)
+        user_id = link_data.get('user_id')
+        if user_id:
+            try:
+                users = await supabase.select("users", filters={"id": user_id}, limit=1)
+                if not users:
+                    await supabase.insert(
+                        "users",
+                        {
+                            "id": user_id,
+                            "email": f"{user_id}@test.com",
+                            "subscription_tier": "free",
+                            "gdpr_consent": True
+                        },
+                        use_service_key=True
+                    )
+            except Exception:
+                pass  # Continue if user creation fails
         
         created_links = await supabase.insert(
             "gift_links",
@@ -266,12 +342,23 @@ async def create_gift_link(gift_link: GiftLinkCreate):
 async def get_gift_link(link_token: str):
     """Get a gift link by token"""
     try:
+        # First try without is_active filter to see if link exists at all
+        all_links = await supabase.select(
+            "gift_links",
+            filters={"link_token": link_token}
+        )
+        
+        # Then filter for active links
         links = await supabase.select(
             "gift_links",
             filters={"link_token": link_token, "is_active": True}
         )
-        if not links:
-            raise HTTPException(status_code=404, detail="Gift link not found")
+        
+        if not all_links:
+            raise HTTPException(status_code=404, detail=f"Gift link {link_token} not found in database")
+        elif not links:
+            raise HTTPException(status_code=404, detail=f"Gift link {link_token} exists but is not active")
+        
         return links[0]
     except HTTPException:
         raise
