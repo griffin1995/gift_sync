@@ -8,73 +8,78 @@ class ProductModel {
   final String title;
   final String? description;
   final String? brand;
-  final double price;
-  @JsonKey(name: 'original_price')
-  final double? originalPrice;
+  @JsonKey(name: 'price_min')
+  final double? priceMin;
+  @JsonKey(name: 'price_max')
+  final double? priceMax;
   final String currency;
-  @JsonKey(name: 'category_path')
-  final String categoryPath;
-  @JsonKey(name: 'primary_category')
-  final String primaryCategory;
-  @JsonKey(name: 'image_urls')
-  final List<String>? imageUrls;
-  @JsonKey(name: 'primary_image_url')
-  final String? primaryImageUrl;
-  @JsonKey(name: 'product_url')
-  final String productUrl;
+  @JsonKey(name: 'category_id')
+  final String? categoryId;
+  final List<String> tags;
+  final Map<String, dynamic>? features;
+  @JsonKey(name: 'image_url')
+  final String? imageUrl;
   @JsonKey(name: 'affiliate_url')
   final String? affiliateUrl;
-  @JsonKey(name: 'average_rating')
-  final double? averageRating;
+  @JsonKey(name: 'affiliate_network')
+  final String? affiliateNetwork;
+  @JsonKey(name: 'commission_rate')
+  final double? commissionRate;
+  final double? rating;
   @JsonKey(name: 'review_count')
   final int reviewCount;
-  final Map<String, dynamic>? attributes;
   @JsonKey(name: 'availability_status')
   final String availabilityStatus;
-  @JsonKey(name: 'is_on_sale')
-  final bool isOnSale;
-  @JsonKey(name: 'discount_percentage')
-  final double discountPercentage;
-  @JsonKey(name: 'popularity_score')
-  final double? popularityScore;
+  @JsonKey(name: 'is_active')
+  final bool isActive;
+  @JsonKey(name: 'created_at')
+  final String? createdAt;
+  @JsonKey(name: 'updated_at')
+  final String? updatedAt;
 
   ProductModel({
     required this.id,
     required this.title,
     this.description,
     this.brand,
-    required this.price,
-    this.originalPrice,
+    this.priceMin,
+    this.priceMax,
     required this.currency,
-    required this.categoryPath,
-    required this.primaryCategory,
-    this.imageUrls,
-    this.primaryImageUrl,
-    required this.productUrl,
+    this.categoryId,
+    this.tags = const [],
+    this.features,
+    this.imageUrl,
     this.affiliateUrl,
-    this.averageRating,
+    this.affiliateNetwork,
+    this.commissionRate,
+    this.rating,
     required this.reviewCount,
-    this.attributes,
     required this.availabilityStatus,
-    required this.isOnSale,
-    required this.discountPercentage,
-    this.popularityScore,
+    required this.isActive,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => _$ProductModelFromJson(json);
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);
 
   // Helper getters
-  String get displayPrice => '\$${price.toStringAsFixed(2)}';
+  String get displayPrice {
+    if (priceMin != null && priceMax != null && priceMin != priceMax) {
+      return '\$${priceMin!.toStringAsFixed(2)} - \$${priceMax!.toStringAsFixed(2)}';
+    } else if (priceMin != null) {
+      return '\$${priceMin!.toStringAsFixed(2)}';
+    } else if (priceMax != null) {
+      return '\$${priceMax!.toStringAsFixed(2)}';
+    }
+    return 'Price not available';
+  }
   
-  String? get displayOriginalPrice => 
-      originalPrice != null ? '\$${originalPrice!.toStringAsFixed(2)}' : null;
+  String get mainImageUrl => imageUrl ?? '';
   
-  List<String> get tags => attributes?['tags']?.cast<String>() ?? [];
+  String get primaryCategory => categoryId ?? 'General';
   
-  String get mainImageUrl => 
-      primaryImageUrl ?? 
-      (imageUrls?.isNotEmpty == true ? imageUrls!.first : '');
+  double? get averageRating => rating;
 }
 
 @JsonSerializable()
@@ -85,13 +90,14 @@ class CategoryModel {
   final String? description;
   @JsonKey(name: 'parent_id')
   final String? parentId;
-  final int level;
+  @JsonKey(name: 'sort_order')
+  final int sortOrder;
   @JsonKey(name: 'icon_url')
   final String? iconUrl;
-  @JsonKey(name: 'color_hex')
-  final String? colorHex;
-  @JsonKey(name: 'popularity_score')
-  final double? popularityScore;
+  @JsonKey(name: 'is_active')
+  final bool isActive;
+  @JsonKey(name: 'created_at')
+  final String? createdAt;
 
   CategoryModel({
     required this.id,
@@ -99,10 +105,10 @@ class CategoryModel {
     required this.slug,
     this.description,
     this.parentId,
-    required this.level,
+    required this.sortOrder,
     this.iconUrl,
-    this.colorHex,
-    this.popularityScore,
+    required this.isActive,
+    this.createdAt,
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) => _$CategoryModelFromJson(json);

@@ -26,13 +26,9 @@ class ProductRepository {
       return await _apiClient.searchProducts(
         query: query,
         category: category,
-        brand: brand,
         minPrice: minPrice,
         maxPrice: maxPrice,
-        sortBy: sortBy,
-        sortOrder: sortOrder,
         limit: limit,
-        offset: offset,
       );
     } on DioException catch (e) {
       throw e.apiException;
@@ -60,13 +56,13 @@ class ProductRepository {
 
   // Categories and brands
   Future<List<CategoryModel>> getCategories({
-    String? parentId,
-    int? level,
+    bool? activeOnly,
+    int? limit,
   }) async {
     try {
       return await _apiClient.getCategories(
-        parentId: parentId,
-        level: level,
+        activeOnly: activeOnly,
+        limit: limit,
       );
     } on DioException catch (e) {
       throw e.apiException;
@@ -150,8 +146,8 @@ final productProvider = FutureProvider.family<ProductModel, String>((ref, produc
 final categoriesProvider = FutureProvider.family<List<CategoryModel>, CategoryParams?>((ref, params) async {
   final repository = ref.read(productRepositoryProvider);
   return repository.getCategories(
-    parentId: params?.parentId,
-    level: params?.level,
+    activeOnly: params?.activeOnly,
+    limit: params?.limit,
   );
 });
 
@@ -235,10 +231,10 @@ class ProductSearchParams {
 }
 
 class CategoryParams {
-  final String? parentId;
-  final int? level;
+  final bool? activeOnly;
+  final int? limit;
 
-  CategoryParams({this.parentId, this.level});
+  CategoryParams({this.activeOnly, this.limit});
 }
 
 class BrandParams {
@@ -318,7 +314,7 @@ class ProductBrowserNotifier extends StateNotifier<ProductBrowserState> {
       
       // Load categories and brands in parallel
       final results = await Future.wait([
-        repository.getCategories(level: 0), // Root categories
+        repository.getCategories(activeOnly: true, limit: 20), // Active categories
         repository.getBrands(featuredOnly: true, limit: 20),
       ]);
       

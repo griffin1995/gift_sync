@@ -36,20 +36,16 @@ abstract class ApiClient {
   Future<Map<String, String>> deleteAccount();
 
   // Products endpoints
-  @GET('/products/')
+  @GET('/api/v1/products')
   Future<List<ProductModel>> searchProducts({
-    @Query('q') String? query,
-    @Query('category') String? category,
-    @Query('brand') String? brand,
+    @Query('search') String? query,
+    @Query('category_id') String? category,
     @Query('min_price') double? minPrice,
     @Query('max_price') double? maxPrice,
-    @Query('sort_by') String? sortBy,
-    @Query('sort_order') String? sortOrder,
     @Query('limit') int? limit,
-    @Query('offset') int? offset,
   });
 
-  @GET('/products/{productId}')
+  @GET('/api/v1/products/{productId}')
   Future<ProductModel> getProduct(@Path('productId') String productId);
 
   @POST('/products/{productId}/click')
@@ -58,10 +54,10 @@ abstract class ApiClient {
     @Body() Map<String, dynamic> clickData,
   );
 
-  @GET('/products/categories/')
+  @GET('/api/v1/categories')
   Future<List<CategoryModel>> getCategories({
-    @Query('parent_id') String? parentId,
-    @Query('level') int? level,
+    @Query('active_only') bool? activeOnly,
+    @Query('limit') int? limit,
   });
 
   @GET('/products/brands/')
@@ -84,28 +80,21 @@ abstract class ApiClient {
   });
 
   // Swipe endpoints
-  @POST('/swipes/sessions')
+  @POST('/api/v1/swipe-sessions')
   Future<SwipeSessionModel> createSwipeSession(@Body() CreateSwipeSessionRequest request);
 
-  @GET('/swipes/sessions')
-  Future<List<SwipeSessionModel>> getSwipeSessions({
-    @Query('limit') int? limit,
-    @Query('offset') int? offset,
-  });
-
-  @GET('/swipes/sessions/{sessionId}')
+  @GET('/api/v1/swipe-sessions/{sessionId}')
   Future<SwipeSessionModel> getSwipeSession(@Path('sessionId') String sessionId);
 
-  @POST('/swipes/sessions/{sessionId}/interactions')
+  @POST('/api/v1/swipe-interactions')
   Future<SwipeInteractionModel> recordSwipeInteraction(
-    @Path('sessionId') String sessionId,
     @Body() RecordSwipeRequest request,
   );
 
-  @PUT('/swipes/sessions/{sessionId}/complete')
-  Future<SwipeSessionModel> completeSwipeSession(
+  @GET('/api/v1/sessions/{sessionId}/interactions')
+  Future<List<SwipeInteractionModel>> getSessionInteractions(
     @Path('sessionId') String sessionId,
-    @Body() CompleteSessionRequest request,
+    @Query('limit') int? limit,
   );
 
   @GET('/swipes/analytics/preferences')
@@ -115,29 +104,16 @@ abstract class ApiClient {
   Future<Map<String, dynamic>> getSwipePatterns();
 
   // Recommendations endpoints
-  @GET('/recommendations/')
-  Future<List<RecommendationModel>> getRecommendations({
+  @GET('/api/v1/users/{userId}/recommendations')
+  Future<List<RecommendationModel>> getRecommendations(
+    @Path('userId') String userId,
+    {
     @Query('limit') int? limit,
-    @Query('offset') int? offset,
-    @Query('recommendation_type') String? recommendationType,
-    @Query('occasion') String? occasion,
-    @Query('price_range') String? priceRange,
-  });
-
-  @GET('/recommendations/generate')
-  Future<Map<String, dynamic>> generateRecommendations({
-    @Query('force_refresh') bool? forceRefresh,
     @Query('session_id') String? sessionId,
   });
 
-  @POST('/recommendations/{recommendationId}/interact')
-  Future<RecommendationInteractionModel> recordRecommendationInteraction(
-    @Path('recommendationId') String recommendationId,
-    @Body() RecordInteractionRequest request,
-  );
-
-  @GET('/recommendations/{recommendationId}')
-  Future<RecommendationModel> getRecommendation(@Path('recommendationId') String recommendationId);
+  @POST('/api/v1/recommendations')
+  Future<RecommendationModel> createRecommendation(@Body() RecommendationCreateRequest request);
 
   @GET('/recommendations/analytics/performance')
   Future<RecommendationAnalyticsModel> getRecommendationAnalytics({
@@ -147,23 +123,10 @@ abstract class ApiClient {
   @DELETE('/recommendations/{recommendationId}')
   Future<Map<String, String>> dismissRecommendation(@Path('recommendationId') String recommendationId);
 
-  // Gift Links endpoints (partial - main ones for mobile app)
-  @POST('/gift-links/')
+  // Gift Links endpoints
+  @POST('/api/v1/gift-links')
   Future<Map<String, dynamic>> createGiftLink(@Body() Map<String, dynamic> linkData);
 
-  @GET('/gift-links/')
-  Future<List<Map<String, dynamic>>> getUserGiftLinks({
-    @Query('limit') int? limit,
-    @Query('offset') int? offset,
-    @Query('active_only') bool? activeOnly,
-  });
-
-  @GET('/gift-links/{linkToken}')
+  @GET('/api/v1/gift-links/{linkToken}')
   Future<Map<String, dynamic>> accessGiftLink(@Path('linkToken') String linkToken);
-
-  @POST('/gift-links/{linkToken}/interact')
-  Future<Map<String, dynamic>> recordGiftLinkInteraction(
-    @Path('linkToken') String linkToken,
-    @Body() Map<String, dynamic> interactionData,
-  );
 }
