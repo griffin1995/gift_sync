@@ -1,0 +1,8 @@
+# Cloudflare Pages redirects for SPA
+/*    /index.html   200
+
+# API routing (if you want to proxy API calls through the same domain)
+/api/*  https://giftsync-api.jackgriffin.dev/api/:splat  200
+
+# Health check
+/health  https://giftsync-api.jackgriffin.dev/health  200

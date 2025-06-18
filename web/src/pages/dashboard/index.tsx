@@ -1,0 +1,493 @@
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { motion } from 'framer-motion';
+import { 
+  Gift, 
+  Heart, 
+  TrendingUp, 
+  Share2, 
+  User, 
+  Settings,
+  Sparkles,
+  Calendar,
+  Link as LinkIcon,
+  BarChart3,
+  Target,
+  Clock,
+  Star
+} from 'lucide-react';
+import { api, tokenManager } from '@/lib/api';
+import { User as UserType, Recommendation, GiftLink } from '@/types';
+import Link from 'next/link';
+import Image from 'next/image';
+import toast from 'react-hot-toast';
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<UserType | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [giftLinks, setGiftLinks] = useState<GiftLink[]>([]);
+  const [statistics, setStatistics] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check authentication
+  useEffect(() => {
+    const token = tokenManager.getAccessToken();
+    if (!token) {
+      router.replace('/auth/login?redirect=/dashboard');
+      return;
+    }
+    
+    loadDashboardData();
+  }, [router]);
+
+  // Load all dashboard data
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load user data
+      const userResponse = await api.getCurrentUser();
+      setUser(userResponse.data);
+      
+      // Load recent recommendations
+      const recommendationsResponse = await api.getRecommendations({ limit: 6 });
+      setRecommendations(recommendationsResponse.data);
+      
+      // Load gift links
+      const giftLinksResponse = await api.getGiftLinks();
+      setGiftLinks(giftLinksResponse.data);
+      
+      // Load user statistics
+      try {
+        const statsResponse = await api.getUserStatistics();
+        setStatistics(statsResponse.data);
+      } catch (error) {
+        console.warn('Failed to load statistics:', error);
+      }
+      
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      toast.error('Failed to load dashboard. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+      router.replace('/');
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Clear tokens anyway
+      tokenManager.clearTokens();
+      router.replace('/');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Failed to load user data</p>
+          <button 
+            onClick={() => router.reload()}
+            className="mt-2 text-primary-600 hover:text-primary-500"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = [
+    {
+      label: 'Total Swipes',
+      value: statistics?.total_swipes || 0,
+      icon: <Heart className="w-5 h-5" />,
+      color: 'text-pink-600',
+      bgColor: 'bg-pink-100',
+    },
+    {
+      label: 'Recommendations',
+      value: statistics?.recommendations_generated || 0,
+      icon: <Sparkles className="w-5 h-5" />,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100',
+    },
+    {
+      label: 'Gift Links',
+      value: statistics?.gift_links_created || 0,
+      icon: <LinkIcon className="w-5 h-5" />,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
+    },
+    {
+      label: 'Saved',
+      value: `$${statistics?.total_savings || 0}`,
+      icon: <Target className="w-5 h-5" />,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
+    },
+  ];
+
+  return (
+    <>
+      <Head>
+        <title>Dashboard - GiftSync</title>
+        <meta name="description" content="Your personalized GiftSync dashboard with recommendations, gift links, and preferences." />
+        <meta name="robots" content="noindex" />
+      </Head>
+
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <Link href="/" className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                  <Gift className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900">GiftSync</span>
+              </Link>
+
+              {/* Navigation */}
+              <nav className="hidden md:flex items-center gap-6">
+                <Link 
+                  href="/discover" 
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  Discover
+                </Link>
+                <Link 
+                  href="/dashboard/recommendations" 
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  Recommendations
+                </Link>
+                <Link 
+                  href="/dashboard/gift-links" 
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  Gift Links
+                </Link>
+              </nav>
+
+              {/* User Menu */}
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.first_name} {user.last_name}
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {user.subscription_tier} Plan
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/dashboard/settings"
+                    className="p-2 text-gray-600 hover:text-primary-600 transition-colors"
+                  >
+                    <Settings className="w-5 h-5" />
+                  </Link>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-gray-600 hover:text-red-600 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+          {/* Welcome Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome back, {user.first_name}! 👋
+            </h1>
+            <p className="text-gray-600">
+              Here's what's happening with your gift discovery journey.
+            </p>
+          </motion.div>
+
+          {/* Statistics Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            {stats.map((stat, index) => (
+              <div
+                key={stat.label}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${stat.bgColor} ${stat.color}`}>
+                    {stat.icon}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Quick Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+          >
+            <Link
+              href="/discover"
+              className="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl p-6 hover:from-primary-600 hover:to-primary-700 transition-all transform hover:scale-105"
+            >
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-8 h-8" />
+                <div>
+                  <h3 className="font-semibold">Discover Gifts</h3>
+                  <p className="text-primary-100 text-sm">Swipe through new products</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/recommendations"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105"
+            >
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-8 h-8" />
+                <div>
+                  <h3 className="font-semibold">View Recommendations</h3>
+                  <p className="text-blue-100 text-sm">See your AI suggestions</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/gift-links/create"
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-6 hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105"
+            >
+              <div className="flex items-center gap-3">
+                <Share2 className="w-8 h-8" />
+                <div>
+                  <h3 className="font-semibold">Create Gift Link</h3>
+                  <p className="text-green-100 text-sm">Share with friends</p>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* Recent Recommendations */}
+          {recommendations.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mb-8"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Recent Recommendations</h2>
+                <Link
+                  href="/dashboard/recommendations"
+                  className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+                >
+                  View all →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recommendations.slice(0, 6).map((recommendation) => (
+                  <div
+                    key={recommendation.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    <div className="relative h-48">
+                      <Image
+                        src={recommendation.product.image_url}
+                        alt={recommendation.product.name}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute top-3 left-3">
+                        <div className="bg-primary-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-current" />
+                          {Math.round(recommendation.score * 100)}% match
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 className="font-medium text-gray-900 line-clamp-2 mb-2">
+                        {recommendation.product.name}
+                      </h3>
+                      <p className="text-primary-600 font-semibold">
+                        ${recommendation.product.price}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        {recommendation.product.brand}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Recent Gift Links */}
+          {giftLinks.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mb-8"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Recent Gift Links</h2>
+                <Link
+                  href="/dashboard/gift-links"
+                  className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+                >
+                  View all →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {giftLinks.slice(0, 4).map((giftLink) => (
+                  <div
+                    key={giftLink.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900 mb-1">
+                          {giftLink.title}
+                        </h3>
+                        {giftLink.recipient_name && (
+                          <p className="text-sm text-gray-600">
+                            For {giftLink.recipient_name}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">
+                          {giftLink.view_count} views
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Gift className="w-4 h-4" />
+                        {giftLink.products.length} items
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(giftLink.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Activity Summary */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+          >
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Activity Summary</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Favorite Categories */}
+              <div>
+                <h3 className="font-medium text-gray-900 mb-4">Favorite Categories</h3>
+                {statistics?.favorite_categories?.length > 0 ? (
+                  <div className="space-y-3">
+                    {statistics.favorite_categories.slice(0, 5).map((category: string, index: number) => (
+                      <div key={category} className="flex items-center justify-between">
+                        <span className="text-gray-700">{category}</span>
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-primary-500 h-2 rounded-full"
+                            style={{ width: `${Math.max(20, 100 - (index * 15))}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">
+                    Start swiping to see your favorite categories!
+                  </p>
+                )}
+              </div>
+
+              {/* Recent Activity */}
+              <div>
+                <h3 className="font-medium text-gray-900 mb-4">Recent Activity</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-600">Last active: </span>
+                    <span className="text-gray-900">
+                      {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Today'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-gray-600">Account created: </span>
+                    <span className="text-gray-900">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-gray-600">Activity score: </span>
+                    <span className="text-gray-900">
+                      {statistics?.activity_score || 0}/100
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </main>
+      </div>
+    </>
+  );
+}
