@@ -2,7 +2,7 @@ import { EnvironmentConfig } from '@/types';
 
 // Environment configuration
 export const config: EnvironmentConfig = {
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   webUrl: process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000',
   mixpanelToken: process.env.NEXT_PUBLIC_MIXPANEL_TOKEN,
   sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
