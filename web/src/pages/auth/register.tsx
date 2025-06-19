@@ -86,9 +86,12 @@ export default function RegisterPage() {
 
   // Check if user is already authenticated
   useEffect(() => {
-    const token = tokenManager.getAccessToken();
-    if (token) {
-      router.replace('/dashboard');
+    // Only run on client side and after initial mount
+    if (typeof window !== 'undefined') {
+      const token = tokenManager.getAccessToken();
+      if (token) {
+        router.replace('/dashboard');
+      }
     }
   }, [router]);
 
@@ -161,7 +164,9 @@ export default function RegisterPage() {
       toast.success(appConfig.success.register);
 
       // Redirect to onboarding or dashboard
-      router.replace('/onboarding');
+      setTimeout(() => {
+        router.push('/onboarding');
+      }, 100);
     } catch (error: any) {
       console.error('Registration error:', error);
 

@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, Mail, Lock, Gift, ArrowLeft } from 'lucide-react';
-import { api, tokenManager } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { appConfig } from '@/config';
 import toast from 'react-hot-toast';
 
@@ -28,6 +28,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,45 +44,23 @@ export default function LoginPage() {
     },
   });
 
-  // Check if user is already authenticated
-  useEffect(() => {
-    const token = tokenManager.getAccessToken();
-    if (token) {
-      router.replace('/dashboard');
-    }
-  }, [router]);
+  // This auth check is now handled by AuthGuard
+  // No need for manual redirect logic here
 
   // Handle form submission
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
 
     try {
-      const response = await api.login(data);
-      const { access_token, refresh_token, user } = response.data;
+      await login(data);
 
-      // Store tokens
-      tokenManager.setTokens(access_token, refresh_token);
-
-      // Store user data
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(appConfig.storage.user, JSON.stringify(user));
-      }
-
-      // Track login event
-      await api.trackEvent({
-        event_name: 'user_login',
-        properties: {
-          method: 'email',
-          remember_me: data.remember_me,
-          user_id: user.id,
-        },
-      });
-
-      toast.success(appConfig.success.login);
-
-      // Redirect to intended page or dashboard
-      const redirectTo = (router.query.redirect as string) || '/dashboard';
-      router.replace(redirectTo);
+      // Redirect to dashboard or specified page
+      const redirectTo = router.query.redirect as string || '/dashboard';
+      
+      // Use setTimeout to avoid SecurityError during rapid state changes
+      setTimeout(() => {
+        router.push(redirectTo);
+      }, 500);
     } catch (error: any) {
       console.error('Login error:', error);
 
