@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/router';
 import { 
   Gift, 
   Sparkles, 
@@ -15,10 +16,47 @@ import {
   CheckCircle,
   Smartphone,
   Monitor,
-  Globe
+  Globe,
+  LogOut,
+  User
 } from 'lucide-react';
+import { tokenManager } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function HomePage() {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  // Check authentication status
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = tokenManager.getAccessToken();
+      const userData = localStorage.getItem('giftsync_user');
+      
+      if (token) {
+        setIsLoggedIn(true);
+        if (userData) {
+          try {
+            setUser(JSON.parse(userData));
+          } catch (error) {
+            console.warn('Invalid user data in localStorage, clearing it');
+            localStorage.removeItem('giftsync_user');
+            setUser(null);
+          }
+        }
+      }
+    }
+  }, []);
+
+  // Handle logout
+  const handleLogout = () => {
+    tokenManager.clearTokens();
+    setIsLoggedIn(false);
+    setUser(null);
+    toast.success('Logged out successfully');
+  };
+
   const features = [
     {
       icon: <Sparkles className="w-6 h-6" />,
@@ -123,20 +161,48 @@ export default function HomePage() {
 
             {/* Auth Buttons */}
             <div className="flex items-center gap-4">
-              <Link
-                href="/auth/login"
-                className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
-              >
-                Sign In
-              </Link>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  href="/auth/register"
-                  className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
-                >
-                  Get Started
-                </Link>
-              </motion.div>
+              {isLoggedIn ? (
+                <>
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <User className="w-4 h-4" />
+                    <span className="font-medium">
+                      {user?.first_name || 'User'}
+                    </span>
+                  </div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/dashboard"
+                      className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                    >
+                      Dashboard
+                    </Link>
+                  </motion.div>
+                  <button
+                    onClick={handleLogout}
+                    className="text-gray-700 hover:text-primary-600 font-medium transition-colors flex items-center gap-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/auth/register"
+                      className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                    >
+                      Get Started
+                    </Link>
+                  </motion.div>
+                </>
+              )}
             </div>
           </div>
         </div>
