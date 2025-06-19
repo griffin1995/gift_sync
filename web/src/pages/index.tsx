@@ -238,7 +238,7 @@ export default function HomePage() {
               <motion.div
                 animate={{ y: [-10, 10, -10] }}
                 transition={{ duration: 4, repeat: Infinity }}
-                className="absolute top-10 -left-4 bg-yellow-400 rounded-full p-3"
+                className="absolute top-4 -left-8 bg-yellow-400 rounded-full p-3 z-20 shadow-lg"
               >
                 <Gift className="w-6 h-6 text-white" />
               </motion.div>
@@ -246,7 +246,7 @@ export default function HomePage() {
               <motion.div
                 animate={{ y: [10, -10, 10] }}
                 transition={{ duration: 3, repeat: Infinity }}
-                className="absolute bottom-10 -right-4 bg-pink-400 rounded-full p-3"
+                className="absolute bottom-4 -right-8 bg-pink-400 rounded-full p-3 z-20 shadow-lg"
               >
                 <Heart className="w-6 h-6 text-white" />
               </motion.div>
@@ -362,8 +362,9 @@ export default function HomePage() {
                   {step.step}
                 </div>
                 
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3 relative">
                   {step.title}
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500"></div>
                 </h3>
                 <p className="text-gray-600">
                   {step.description}
