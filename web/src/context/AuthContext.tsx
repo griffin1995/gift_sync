@@ -115,9 +115,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Get stored user data
         const storedUser = localStorage.getItem(appConfig.storage.user);
+        
         if (storedUser) {
-          const user = JSON.parse(storedUser) as User;
-          dispatch({ type: 'SET_USER', payload: user });
+          try {
+            const user = JSON.parse(storedUser) as User;
+            dispatch({ type: 'SET_USER', payload: user });
+          } catch (parseError) {
+            console.warn('Invalid stored user data, clearing localStorage:', parseError);
+            // Clear corrupted data
+            localStorage.removeItem(appConfig.storage.user);
+          }
         }
 
         // Verify token with backend
