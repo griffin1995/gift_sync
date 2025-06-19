@@ -238,7 +238,11 @@ class ApiClient {
   }
 
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.client.post(url, data, config);
+    const response: AxiosResponse<any> = await this.client.post(url, data, config);
+    // Handle direct response from backend (not wrapped in ApiResponse)
+    if (response.data && !response.data.hasOwnProperty('data')) {
+      return { data: response.data, success: true };
+    }
     return response.data;
   }
 
@@ -433,6 +437,9 @@ export const api = {
   register: (data: RegisterRequest) => apiClient.register(data),
   logout: () => apiClient.logout(),
   getCurrentUser: () => apiClient.getCurrentUser(),
+  
+  // Users
+  getUserStatistics: () => apiClient.getUserStatistics(),
   
   // Products
   getProducts: (params?: any) => apiClient.getProducts(params),

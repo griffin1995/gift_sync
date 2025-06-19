@@ -32,44 +32,69 @@ export default function DashboardPage() {
   const [statistics, setStatistics] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check authentication
+  // Check authentication and load dashboard data
   useEffect(() => {
-    const token = tokenManager.getAccessToken();
-    if (!token) {
-      router.replace('/auth/login?redirect=/dashboard');
-      return;
-    }
-    
     loadDashboardData();
-  }, [router]);
+  }, []);
 
   // Load all dashboard data
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
       
-      // Load user data
-      const userResponse = await api.getCurrentUser();
-      setUser(userResponse.data);
+      // Load user data first - this is essential
+      try {
+        const userResponse = await api.getCurrentUser();
+        
+        // Handle response format - sometimes data is direct, sometimes wrapped
+        const userData = userResponse.data || userResponse;
+        setUser(userData);
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+        toast.error('Failed to load user data. Please try logging in again.');
+        setIsLoading(false);
+        return;
+      }
       
-      // Load recent recommendations
-      const recommendationsResponse = await api.getRecommendations({ limit: 6 });
-      setRecommendations(recommendationsResponse.data);
+      // Load optional data - if these fail, dashboard should still work
+      // Note: These endpoints may not be implemented in the backend yet
       
-      // Load gift links
-      const giftLinksResponse = await api.getGiftLinks();
-      setGiftLinks(giftLinksResponse.data);
+      // Load recent recommendations (optional)
+      try {
+        const recommendationsResponse = await api.getRecommendations({ limit: 6 });
+        setRecommendations(recommendationsResponse.data);
+      } catch (error) {
+        console.warn('Recommendations not available:', error);
+        setRecommendations([]);
+      }
       
-      // Load user statistics
+      // Load gift links (optional)
+      try {
+        const giftLinksResponse = await api.getGiftLinks();
+        setGiftLinks(giftLinksResponse.data);
+      } catch (error) {
+        console.warn('Gift links not available:', error);
+        setGiftLinks([]);
+      }
+      
+      // Load user statistics (optional)
       try {
         const statsResponse = await api.getUserStatistics();
         setStatistics(statsResponse.data);
       } catch (error) {
-        console.warn('Failed to load statistics:', error);
+        console.warn('Statistics not available:', error);
+        setStatistics({
+          total_swipes: 0,
+          recommendations_generated: 0,
+          gift_links_created: 0,
+          total_savings: 0,
+          favorite_categories: [],
+          activity_score: 0
+        }); // Set default stats to avoid loading states
       }
       
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      console.error('Unexpected error loading dashboard:', error);
       toast.error('Failed to load dashboard. Please try again.');
     } finally {
       setIsLoading(false);
