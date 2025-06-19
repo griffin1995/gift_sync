@@ -557,65 +557,62 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
+      <footer className="bg-gray-900 text-white py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8">
+            <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                   <Gift className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-bold">GiftSync</span>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-gray-400 mb-4 text-sm md:text-base">
                 AI-powered gift recommendations that actually make sense.
               </p>
               <div className="flex gap-4">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Twitter
                 </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Facebook
                 </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Instagram
                 </a>
               </div>
             </div>
             
             <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
+              <h3 className="font-semibold mb-4 text-sm md:text-base">Product</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
                 <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/api" className="hover:text-white transition-colors">API</Link></li>
-                <li><Link href="/mobile" className="hover:text-white transition-colors">Mobile Apps</Link></li>
+                <li><Link href="/discover" className="hover:text-white transition-colors">Try Demo</Link></li>
+                <li><Link href="/auth/register" className="hover:text-white transition-colors">Sign Up</Link></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
+              <h3 className="font-semibold mb-4 text-sm md:text-base">Company</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
                 <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
                 <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-                <li><Link href="/press" className="hover:text-white transition-colors">Press</Link></li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
+              <h3 className="font-semibold mb-4 text-sm md:text-base">Support</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li><Link href="/help" className="hover:text-white transition-colors">Help Centre</Link></li>
                 <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
                 <li><Link href="/terms" className="hover:text-white transition-colors">Terms</Link></li>
-                <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 GiftSync. All rights reserved.</p>
+            <p className="text-sm">&copy; 2024 GiftSync. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -186,6 +186,10 @@ export default function RegisterPage() {
       } else if (error.status === 409) {
         setError('email', { message: 'An account with this email already exists' });
         setStep(1);
+      } else if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        toast.error('Network error: Unable to connect to server. Please check your connection and try again.');
+      } else if (error.status >= 500) {
+        toast.error('Server error: The service is temporarily unavailable. Please try again later.');
       } else {
         toast.error(error.message || 'Failed to create account. Please try again.');
       }

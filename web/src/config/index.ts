@@ -16,70 +16,70 @@ export const config: EnvironmentConfig = {
 export const endpoints = {
   // Authentication
   auth: {
-    login: '/auth/login',
-    register: '/auth/register',
-    refresh: '/auth/refresh',
-    logout: '/auth/logout',
-    me: '/auth/me',
-    forgotPassword: '/auth/forgot-password',
-    resetPassword: '/auth/reset-password',
-    verifyEmail: '/auth/verify-email',
+    login: '/api/v1/auth/login',
+    register: '/api/v1/auth/register',
+    refresh: '/api/v1/auth/refresh',
+    logout: '/api/v1/auth/logout',
+    me: '/api/v1/auth/me',
+    forgotPassword: '/api/v1/auth/forgot-password',
+    resetPassword: '/api/v1/auth/reset-password',
+    verifyEmail: '/api/v1/auth/verify-email',
   },
   
   // Users
   users: {
-    profile: '/users/me',
-    updateProfile: '/users/me',
-    preferences: '/users/me/preferences',
-    statistics: '/users/me/statistics',
-    deleteAccount: '/users/me',
+    profile: '/api/v1/users/me',
+    updateProfile: '/api/v1/users/me',
+    preferences: '/api/v1/users/me/preferences',
+    statistics: '/api/v1/users/me/statistics',
+    deleteAccount: '/api/v1/users/me',
   },
   
   // Products
   products: {
-    list: '/products',
-    search: '/products/search',
-    categories: '/products/categories',
-    featured: '/products/featured',
-    trending: '/products/trending',
-    byCategory: (categoryId: string) => `/products/category/${categoryId}`,
-    byId: (id: string) => `/products/${id}`,
-    recommendations: '/products/recommendations',
+    list: '/api/v1/products',
+    search: '/api/v1/products/search',
+    categories: '/api/v1/products/categories',
+    featured: '/api/v1/products/featured',
+    trending: '/api/v1/products/trending',
+    byCategory: (categoryId: string) => `/api/v1/products/category/${categoryId}`,
+    byId: (id: string) => `/api/v1/products/${id}`,
+    recommendations: '/api/v1/products/recommendations',
   },
   
   // Swipes
   swipes: {
-    sessions: '/swipes/sessions',
-    createSession: '/swipes/sessions',
-    currentSession: '/swipes/sessions/current',
-    interactions: (sessionId: string) => `/swipes/sessions/${sessionId}/interactions`,
-    analytics: '/swipes/analytics',
+    sessions: '/api/v1/swipes/sessions',
+    createSession: '/api/v1/swipes/sessions',
+    currentSession: '/api/v1/swipes/sessions/current',
+    interactions: (sessionId: string) => `/api/v1/swipes/sessions/${sessionId}/interactions`,
+    analytics: '/api/v1/swipes/analytics',
   },
   
   // Recommendations
   recommendations: {
-    generate: '/recommendations/generate',
-    list: '/recommendations',
-    byId: (id: string) => `/recommendations/${id}`,
-    feedback: (id: string) => `/recommendations/${id}/feedback`,
-    refresh: '/recommendations/refresh',
+    generate: '/api/v1/recommendations/generate',
+    list: '/api/v1/recommendations',
+    byId: (id: string) => `/api/v1/recommendations/${id}`,
+    feedback: (id: string) => `/api/v1/recommendations/${id}/feedback`,
+    refresh: '/api/v1/recommendations/refresh',
   },
   
   // Gift Links
   giftLinks: {
-    create: '/gift-links',
-    list: '/gift-links',
-    byId: (id: string) => `/gift-links/${id}`,
-    byToken: (token: string) => `/gift-links/share/${token}`,
-    delete: (id: string) => `/gift-links/${id}`,
-    analytics: (id: string) => `/gift-links/${id}/analytics`,
+    create: '/api/v1/gift-links',
+    list: '/api/v1/gift-links',
+    byId: (id: string) => `/api/v1/gift-links/${id}`,
+    byToken: (token: string) => `/api/v1/gift-links/share/${token}`,
+    delete: (id: string) => `/api/v1/gift-links/${id}`,
+    analytics: (id: string) => `/api/v1/gift-links/${id}/analytics`,
   },
   
   // Analytics
   analytics: {
-    track: '/analytics/track',
-    events: '/analytics/events',
-    dashboard: '/analytics/dashboard',
+    track: '/api/v1/analytics/track',
+    events: '/api/v1/analytics/events',
+    dashboard: '/api/v1/analytics/dashboard',
   },
   
   // Health
