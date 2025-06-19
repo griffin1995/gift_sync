@@ -7,7 +7,7 @@
  */
 export function formatPrice(amount: number, currency: string): string {
   const currencySymbol = formatCurrency(currency);
-  const formatted = new Intl.NumberFormat('en-US', {
+  const formatted = new Intl.NumberFormat('en-GB', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Math.abs(amount));
@@ -46,6 +46,14 @@ export function formatCurrency(currency: string): string {
   };
 
   return currencyMap[currency.toUpperCase()] || currency.toUpperCase();
+}
+
+/**
+ * Format a date for display with British format (DD/MM/YYYY)
+ */
+export function formatDate(date: Date | string): string {
+  const targetDate = typeof date === 'string' ? new Date(date) : date;
+  return targetDate.toLocaleDateString('en-GB');
 }
 
 /**
@@ -92,7 +100,7 @@ export function formatNumber(
     ...options,
   };
 
-  return new Intl.NumberFormat('en-US', defaultOptions).format(num);
+  return new Intl.NumberFormat('en-GB', defaultOptions).format(num);
 }
 
 /**
@@ -158,7 +166,7 @@ export function formatPhoneNumber(phoneNumber: string): string {
     return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
   }
 
-  // Return original if not a recognized format
+  // Return original if not a recognised format
   return phoneNumber;
 }
 

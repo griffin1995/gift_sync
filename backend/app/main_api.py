@@ -17,6 +17,10 @@ from app.models import (
     GiftLink, GiftLinkCreate,
     HealthResponse, ErrorResponse
 )
+from pydantic import BaseModel, EmailStr
+import jwt
+import bcrypt
+from datetime import timedelta
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -53,6 +57,198 @@ async def health():
         status="healthy",
         timestamp=datetime.now(),
         version=settings.VERSION
+    )
+
+# Authentication Models
+class UserRegister(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str
+    date_of_birth: Optional[str] = None
+    marketing_consent: bool = False
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+    remember_me: bool = False
+
+class AuthResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    user: dict
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    first_name: str
+    last_name: str
+    subscription_tier: str = "free"
+    created_at: str
+    last_login: Optional[str] = None
+
+# Authentication Endpoints
+@app.post("/api/v1/auth/register", response_model=AuthResponse)
+async def register(user_data: UserRegister):
+    """Register a new user"""
+    try:
+        # Check if user already exists
+        existing_users = await supabase.select(
+            "users",
+            filters={"email": user_data.email}
+        )
+        if existing_users:
+            raise HTTPException(status_code=409, detail="User with this email already exists")
+        
+        # Hash password (simplified - in production use proper hashing)
+        hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
+        
+        # Create user record
+        user_record = {
+            "id": str(uuid.uuid4()),
+            "email": user_data.email,
+            "first_name": user_data.first_name,
+            "last_name": user_data.last_name,
+            "password_hash": hashed_password.decode('utf-8'),
+            "subscription_tier": "free",
+            "date_of_birth": user_data.date_of_birth,
+            "marketing_consent": user_data.marketing_consent,
+            "gdpr_consent": True,
+            "email_verified": False,
+            "created_at": datetime.now().isoformat(),
+            "last_login": datetime.now().isoformat()
+        }
+        
+        # Insert user into database
+        created_users = await supabase.insert(
+            "users",
+            user_record,
+            use_service_key=True
+        )
+        
+        created_user = created_users[0]
+        
+        # Generate tokens (simplified - in production use proper JWT)
+        access_token = jwt.encode(
+            {"user_id": created_user["id"], "email": created_user["email"]},
+            "your-secret-key",  # Use settings.SECRET_KEY in production
+            algorithm="HS256"
+        )
+        refresh_token = jwt.encode(
+            {"user_id": created_user["id"], "type": "refresh"},
+            "your-secret-key",
+            algorithm="HS256"
+        )
+        
+        # Return user data without password
+        user_response = {
+            "id": created_user["id"],
+            "email": created_user["email"],
+            "first_name": created_user["first_name"],
+            "last_name": created_user["last_name"],
+            "subscription_tier": created_user["subscription_tier"],
+            "created_at": created_user["created_at"],
+            "last_login": created_user["last_login"]
+        }
+        
+        return AuthResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user=user_response
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+
+@app.post("/api/v1/auth/login", response_model=AuthResponse)
+async def login(credentials: UserLogin):
+    """Login user"""
+    try:
+        # Find user by email
+        users = await supabase.select(
+            "users",
+            filters={"email": credentials.email}
+        )
+        
+        if not users:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        user = users[0]
+        
+        # Verify password (simplified - in production use proper verification)
+        if not bcrypt.checkpw(credentials.password.encode('utf-8'), user["password_hash"].encode('utf-8')):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Update last login
+        await supabase.update(
+            "users",
+            {"last_login": datetime.now().isoformat()},
+            filters={"id": user["id"]},
+            use_service_key=True
+        )
+        
+        # Generate tokens
+        access_token = jwt.encode(
+            {"user_id": user["id"], "email": user["email"]},
+            "your-secret-key",
+            algorithm="HS256"
+        )
+        refresh_token = jwt.encode(
+            {"user_id": user["id"], "type": "refresh"},
+            "your-secret-key",
+            algorithm="HS256"
+        )
+        
+        # Return user data without password
+        user_response = {
+            "id": user["id"],
+            "email": user["email"],
+            "first_name": user["first_name"],
+            "last_name": user["last_name"],
+            "subscription_tier": user["subscription_tier"],
+            "created_at": user["created_at"],
+            "last_login": datetime.now().isoformat()
+        }
+        
+        return AuthResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user=user_response
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+
+@app.get("/api/v1/auth/me", response_model=UserResponse)
+async def get_current_user():
+    """Get current user information (placeholder - needs proper auth middleware)"""
+    # This is a placeholder - in production you'd extract user from JWT token
+    return UserResponse(
+        id="test-user-id",
+        email="test@example.com",
+        first_name="Test",
+        last_name="User",
+        subscription_tier="free",
+        created_at=datetime.now().isoformat()
+    )
+
+@app.post("/api/v1/auth/logout")
+async def logout():
+    """Logout user"""
+    return {"message": "Logged out successfully"}
+
+@app.post("/api/v1/auth/refresh", response_model=AuthResponse)
+async def refresh_token():
+    """Refresh access token (placeholder)"""
+    # Placeholder implementation
+    return AuthResponse(
+        access_token="new-access-token",
+        refresh_token="new-refresh-token",
+        user={"id": "test", "email": "test@example.com"}
     )
 
 # Categories endpoints

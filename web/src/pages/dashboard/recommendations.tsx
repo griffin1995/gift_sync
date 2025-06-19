@@ -150,8 +150,8 @@ export default function RecommendationsPage() {
   };
 
   // Format price
-  const formatPrice = (price: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
+  const formatPrice = (price: number, currency: string = 'GBP') => {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
       currency: currency,
     }).format(price);
@@ -353,7 +353,7 @@ export default function RecommendationsPage() {
                 </div>
 
                 <div className="text-sm text-gray-500">
-                  Last updated: {new Date().toLocaleDateString()}
+                  Last updated: {new Date().toLocaleDateString('en-GB')}
                 </div>
               </div>
 

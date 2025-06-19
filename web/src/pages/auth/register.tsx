@@ -372,11 +372,12 @@ export default function RegisterPage() {
                       {...register('date_of_birth')}
                       type="date"
                       id="date_of_birth"
+                      lang="en-GB"
                       className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors hover:border-gray-400"
                       disabled={isLoading}
                     />
                     <p className="mt-1 text-xs text-gray-500">
-                      This helps us provide age-appropriate gift recommendations
+                      This helps us provide age-appropriate gift recommendations. Use DD/MM/YYYY format.
                     </p>
                   </div>
                 </motion.div>

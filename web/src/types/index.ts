@@ -75,7 +75,7 @@ export interface UserStatistics {
   gift_links_created: number;
   gift_links_shared: number;
   total_savings: number;
-  favorite_categories: string[];
+  favourite_categories: string[];
   activity_score: number;
 }
 

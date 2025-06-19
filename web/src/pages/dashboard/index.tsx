@@ -18,6 +18,7 @@ import {
   Star
 } from 'lucide-react';
 import { api, tokenManager } from '@/lib/api';
+import { formatDate } from '../../utils/formatting';
 import { User as UserType, Recommendation, GiftLink } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -414,7 +415,7 @@ export default function DashboardPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        {new Date(giftLink.created_at).toLocaleDateString()}
+                        {formatDate(giftLink.created_at)}
                       </span>
                     </div>
                   </div>
@@ -465,14 +466,14 @@ export default function DashboardPage() {
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-gray-600">Last active: </span>
                     <span className="text-gray-900">
-                      {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Today'}
+                      {user.last_login ? formatDate(user.last_login) : 'Today'}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span className="text-gray-600">Account created: </span>
                     <span className="text-gray-900">
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {formatDate(user.created_at)}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">

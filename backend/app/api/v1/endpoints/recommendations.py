@@ -252,7 +252,7 @@ async def get_recommendation(
 
 @router.get("/analytics/performance", summary="Get recommendation performance analytics")
 async def get_recommendation_analytics(
-    days: int = Query(30, description="Number of days to analyze"),
+    days: int = Query(30, description="Number of days to analyse"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

@@ -334,7 +334,7 @@ export default function HomePage() {
               {
                 step: '02',
                 title: 'AI Learns Your Taste',
-                description: 'Our machine learning algorithms analyze your preferences to understand your unique style.',
+                description: 'Our machine learning algorithms analyse your preferences to understand your unique style.',
                 icon: <Sparkles className="w-8 h-8" />,
               },
               {

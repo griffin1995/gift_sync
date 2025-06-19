@@ -326,7 +326,7 @@ export function SearchFilters({ className = '', orientation = 'vertical', collap
                               </div>
                               {option.count && (
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {option.count.toLocaleString()}
+                                  {option.count.toLocaleString('en-GB')}
                                 </span>
                               )}
                             </label>
