@@ -38,12 +38,15 @@ const PUBLIC_ROUTES = [
 ];
 
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const { isAuthenticated, isInitialized, isLoading } = useAuth();
+  const { isAuthenticated, isInitialized, isLoading, isLoggingOut } = useAuth();
   const router = useRouter();
   const currentPath = router.asPath.split('?')[0]; // Remove query params
 
   useEffect(() => {
     if (!isInitialized) return;
+    
+    // Don't redirect during logout process
+    if (isLoggingOut) return;
 
     const isProtectedRoute = PROTECTED_ROUTES.some(route => 
       currentPath.startsWith(route)
@@ -65,7 +68,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
       router.replace(redirectTo);
       return;
     }
-  }, [isAuthenticated, isInitialized, currentPath, router]);
+  }, [isAuthenticated, isInitialized, isLoggingOut, currentPath, router]);
 
   // Show loading state while initializing or during redirects
   if (!isInitialized || isLoading) {

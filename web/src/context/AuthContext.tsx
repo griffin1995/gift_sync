@@ -11,6 +11,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialized: boolean;
+  isLoggingOut: boolean;
   error: string | null;
 }
 
@@ -29,6 +30,7 @@ type AuthAction =
   | { type: 'SET_USER'; payload: User | null }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_INITIALIZED'; payload: boolean }
+  | { type: 'SET_LOGGING_OUT'; payload: boolean }
   | { type: 'LOGOUT' }
   | { type: 'UPDATE_USER'; payload: Partial<User> };
 
@@ -38,6 +40,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: true,
   isInitialized: false,
+  isLoggingOut: false,
   error: null,
 };
 
@@ -70,11 +73,18 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         isLoading: !action.payload,
       };
     
+    case 'SET_LOGGING_OUT':
+      return {
+        ...state,
+        isLoggingOut: action.payload,
+      };
+    
     case 'LOGOUT':
       return {
         ...initialState,
         isInitialized: true,
         isLoading: false,
+        isLoggingOut: false,
       };
     
     case 'UPDATE_USER':
@@ -273,6 +283,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
+      dispatch({ type: 'SET_LOGGING_OUT', payload: true });
       dispatch({ type: 'SET_LOADING', payload: true });
 
       // Call logout API
@@ -299,15 +310,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       await logoutInternal();
       
+      console.log('🚪 Logout completed, redirecting to homepage...');
       toast.success(appConfig.success.logout);
 
-      // Redirect to home page
-      router.replace('/');
+      // Small delay to ensure state update completes before redirect
+      setTimeout(() => {
+        console.log('🚪 Executing redirect to homepage');
+        router.replace('/');
+      }, 100);
     } catch (error: any) {
       console.error('Logout error:', error);
       // Force logout even if API call fails
       await logoutInternal();
-      router.replace('/');
+      setTimeout(() => {
+        router.replace('/');
+      }, 100);
     }
   };
 

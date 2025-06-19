@@ -18,6 +18,7 @@ import {
   Star
 } from 'lucide-react';
 import { api, tokenManager } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { formatDate } from '../../utils/formatting';
 import { User as UserType, Recommendation, GiftLink } from '@/types';
 import Link from 'next/link';
@@ -26,6 +27,7 @@ import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [user, setUser] = useState<UserType | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [giftLinks, setGiftLinks] = useState<GiftLink[]>([]);
@@ -104,14 +106,16 @@ export default function DashboardPage() {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await api.logout();
-      router.replace('/');
-      toast.success('Logged out successfully');
+      await logout(); // Use AuthContext logout for complete cleanup
+      // AuthContext logout handles:
+      // - Backend API call
+      // - Clear all localStorage data
+      // - Update global auth state  
+      // - Show success toast
+      // - Redirect to homepage
     } catch (error) {
       console.error('Logout error:', error);
-      // Clear tokens anyway
-      tokenManager.clearTokens();
-      router.replace('/');
+      toast.error('Logout failed. Please try again.');
     }
   };
 

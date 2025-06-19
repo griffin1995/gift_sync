@@ -21,10 +21,12 @@ import {
   User
 } from 'lucide-react';
 import { tokenManager } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function HomePage() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
 
@@ -50,11 +52,23 @@ export default function HomePage() {
   }, []);
 
   // Handle logout
-  const handleLogout = () => {
-    tokenManager.clearTokens();
-    setIsLoggedIn(false);
-    setUser(null);
-    toast.success('Logged out successfully');
+  const handleLogout = async () => {
+    try {
+      await logout(); // Use AuthContext logout method for complete cleanup
+      // AuthContext logout already handles:
+      // - Backend API call
+      // - Clear all localStorage data  
+      // - Update global auth state
+      // - Show success toast
+      // - Redirect to homepage
+      
+      // Update local state to reflect logout immediately
+      setIsLoggedIn(false);
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Logout failed. Please try again.');
+    }
   };
 
   const features = [
