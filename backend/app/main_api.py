@@ -95,7 +95,8 @@ async def register(user_data: UserRegister):
         # Check if user already exists
         existing_users = await supabase.select(
             "users",
-            filters={"email": user_data.email}
+            filters={"email": user_data.email},
+            use_service_key=True
         )
         if existing_users:
             raise HTTPException(status_code=409, detail="User with this email already exists")
@@ -103,20 +104,18 @@ async def register(user_data: UserRegister):
         # Hash password (simplified - in production use proper hashing)
         hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
         
-        # Create user record
+        # Create user record to match database schema
         user_record = {
-            "id": str(uuid.uuid4()),
             "email": user_data.email,
             "first_name": user_data.first_name,
             "last_name": user_data.last_name,
+            "full_name": f"{user_data.first_name} {user_data.last_name}",
             "password_hash": hashed_password.decode('utf-8'),
             "subscription_tier": "free",
             "date_of_birth": user_data.date_of_birth,
-            "marketing_consent": user_data.marketing_consent,
             "gdpr_consent": True,
             "email_verified": False,
-            "created_at": datetime.now().isoformat(),
-            "last_login": datetime.now().isoformat()
+            "last_login_at": datetime.now().isoformat()
         }
         
         # Insert user into database
@@ -148,7 +147,7 @@ async def register(user_data: UserRegister):
             "last_name": created_user["last_name"],
             "subscription_tier": created_user["subscription_tier"],
             "created_at": created_user["created_at"],
-            "last_login": created_user["last_login"]
+            "last_login": created_user["last_login_at"]
         }
         
         return AuthResponse(
@@ -169,7 +168,9 @@ async def login(credentials: UserLogin):
         # Find user by email
         users = await supabase.select(
             "users",
-            filters={"email": credentials.email}
+            select="*",
+            filters={"email": credentials.email},
+            use_service_key=True
         )
         
         if not users:
@@ -178,13 +179,16 @@ async def login(credentials: UserLogin):
         user = users[0]
         
         # Verify password (simplified - in production use proper verification)
+        if "password_hash" not in user or not user["password_hash"]:
+            raise HTTPException(status_code=401, detail="Invalid credentials - no password hash")
+        
         if not bcrypt.checkpw(credentials.password.encode('utf-8'), user["password_hash"].encode('utf-8')):
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+            raise HTTPException(status_code=401, detail="Invalid credentials - password mismatch")
         
         # Update last login
         await supabase.update(
             "users",
-            {"last_login": datetime.now().isoformat()},
+            {"last_login_at": datetime.now().isoformat()},
             filters={"id": user["id"]},
             use_service_key=True
         )
@@ -209,7 +213,7 @@ async def login(credentials: UserLogin):
             "last_name": user["last_name"],
             "subscription_tier": user["subscription_tier"],
             "created_at": user["created_at"],
-            "last_login": datetime.now().isoformat()
+            "last_login": user.get("last_login_at", datetime.now().isoformat())
         }
         
         return AuthResponse(
@@ -562,6 +566,13 @@ async def get_gift_link(link_token: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Analytics endpoint
+@app.post("/api/v1/analytics/track")
+async def track_event(event_data: dict):
+    """Track analytics event (placeholder for development)"""
+    # For now, just log the event - in production this would save to analytics system
+    print(f"Analytics Event: {event_data}")
+    return {"status": "tracked", "event": event_data.get("event_name", "unknown")}
+
 @app.get("/api/v1/analytics/dashboard")
 async def get_analytics_dashboard():
     """Get basic analytics dashboard data"""
