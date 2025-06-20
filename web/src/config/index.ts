@@ -12,6 +12,12 @@ export const config: EnvironmentConfig = {
   isProduction: process.env.NODE_ENV === 'production',
   isDevelopment: process.env.NODE_ENV === 'development',
   version: process.env.npm_package_version || '1.0.0',
+  
+  // Amazon Associates Configuration
+  amazonAssociateTag: process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG || 'giftsync-21',
+  amazonRegion: process.env.NEXT_PUBLIC_AMAZON_REGION || 'uk',
+  amazonApiKey: process.env.NEXT_PUBLIC_AMAZON_API_KEY,
+  amazonSecretKey: process.env.NEXT_PUBLIC_AMAZON_SECRET_KEY,
 };
 
 // API endpoints
@@ -149,10 +155,13 @@ export const appConfig = {
     pushNotifications: true,
     darkMode: true,
     analytics: true,
+    affiliateLinks: true,
+    affiliateTracking: true,
     beta: {
       voiceSearch: false,
       arFeatures: false,
       chatbot: false,
+      amazonApiIntegration: false,
     },
   },
   
@@ -166,6 +175,8 @@ export const appConfig = {
     careers: '/careers',
     pressKit: '/press',
     apiDocs: `${config.apiUrl}/docs`,
+    affiliateDisclosure: '/affiliate-disclosure',
+    cookiePolicy: '/cookie-policy',
   },
   
   // Social media
@@ -268,8 +279,247 @@ export const appConfig = {
     preferencesUpdated: 'Preferences updated successfully.',
     giftLinkCreated: 'Gift link created successfully!',
     giftLinkShared: 'Gift link shared successfully!',
+    affiliateLinkGenerated: 'Affiliate link generated successfully!',
   },
 };
+
+// Amazon Associates Configuration
+export const amazonConfig = {
+  // UK Amazon Associates Configuration
+  uk: {
+    associateTag: 'giftsync-21',
+    baseUrl: 'https://amazon.co.uk',
+    apiHost: 'webservices.amazon.co.uk',
+    marketplace: 'A1F83G8C2ARO7P',
+    region: 'eu-west-1',
+    currency: 'GBP',
+    language: 'en_GB',
+  },
+  
+  // Commission rates by category (approximate)
+  commissionRates: {
+    electronics: 0.01,          // 1%
+    fashion: 0.04,             // 4%
+    homeAndGarden: 0.03,       // 3%
+    sportsAndOutdoors: 0.03,   // 3%
+    books: 0.045,              // 4.5%
+    toys: 0.03,                // 3%
+    beautyAndPersonalCare: 0.04, // 4%
+    automotive: 0.045,         // 4.5%
+    industrial: 0.045,         // 4.5%
+    outdoorAndGarden: 0.03,    // 3%
+    default: 0.02,             // 2%
+  },
+  
+  // Product categories for recommendations
+  productCategories: {
+    'All': 'All',
+    'Electronics': 'Electronics',
+    'Fashion': 'Fashion',
+    'Home & Garden': 'Garden',
+    'Sports & Outdoors': 'SportingGoods',
+    'Books': 'Books',
+    'Toys & Games': 'Toys',
+    'Beauty & Personal Care': 'Beauty',
+    'Automotive': 'Automotive',
+    'Health & Household': 'HealthPersonalCare',
+    'Tools & Home Improvement': 'Tools',
+    'Video Games': 'VideoGames',
+    'Office Products': 'OfficeProducts',
+    'Kitchen & Dining': 'Kitchen',
+    'Baby': 'Baby',
+    'Pet Supplies': 'PetSupplies',
+    'Industrial & Scientific': 'Industrial',
+    'Handmade': 'Handmade',
+    'Arts, Crafts & Sewing': 'ArtsAndCrafts',
+    'Musical Instruments': 'MusicalInstruments',
+  },
+  
+  // API Configuration
+  api: {
+    version: '5.0',
+    requestsPerSecond: 1,
+    timeoutMs: 5000,
+    retryAttempts: 3,
+    retryDelayMs: 1000,
+  },
+  
+  // Tracking and Analytics
+  tracking: {
+    enableConversionTracking: true,
+    enableClickTracking: true,
+    enableImpressionTracking: true,
+    sessionTimeoutMinutes: 30,
+    attributionWindowDays: 30,
+  },
+};
+
+// Affiliate Link Generation Utilities
+export class AffiliateLinksService {
+  /**
+   * Generates an Amazon affiliate link with proper tracking
+   */
+  static generateAffiliateLink(
+    productUrl: string, 
+    options: {
+      associateTag?: string;
+      ref?: string;
+      campaign?: string;
+      medium?: string;
+      source?: string;
+    } = {}
+  ): string {
+    try {
+      const url = new URL(productUrl);
+      
+      // Ensure we're using the correct Amazon domain
+      if (!url.hostname.includes('amazon.co.uk')) {
+        // Convert to UK domain if needed
+        url.hostname = 'amazon.co.uk';
+      }
+      
+      // Add associate tag
+      url.searchParams.set('tag', options.associateTag || amazonConfig.uk.associateTag);
+      
+      // Add tracking parameters
+      if (options.ref) {
+        url.searchParams.set('ref_', options.ref);
+      }
+      
+      if (options.campaign) {
+        url.searchParams.set('campaign', options.campaign);
+      }
+      
+      if (options.medium) {
+        url.searchParams.set('medium', options.medium);
+      }
+      
+      if (options.source) {
+        url.searchParams.set('source', options.source);
+      }
+      
+      // Add timestamp for tracking
+      url.searchParams.set('timestamp', Date.now().toString());
+      
+      return url.toString();
+    } catch (error) {
+      console.error('Error generating affiliate link:', error);
+      return productUrl; // Return original URL if generation fails
+    }
+  }
+  
+  /**
+   * Generates an Amazon search link with affiliate tracking
+   */
+  static generateSearchLink(
+    searchTerm: string,
+    category?: string,
+    options: {
+      associateTag?: string;
+      ref?: string;
+    } = {}
+  ): string {
+    const baseUrl = 'https://amazon.co.uk/s';
+    const url = new URL(baseUrl);
+    
+    url.searchParams.set('k', searchTerm);
+    url.searchParams.set('tag', options.associateTag || amazonConfig.uk.associateTag);
+    
+    if (category && amazonConfig.productCategories[category]) {
+      url.searchParams.set('i', amazonConfig.productCategories[category]);
+    }
+    
+    if (options.ref) {
+      url.searchParams.set('ref', options.ref);
+    }
+    
+    return url.toString();
+  }
+  
+  /**
+   * Extracts ASIN from Amazon product URL
+   */
+  static extractASIN(productUrl: string): string | null {
+    try {
+      // Common ASIN patterns in Amazon URLs
+      const asinPatterns = [
+        /\/dp\/([A-Z0-9]{10})/,
+        /\/gp\/product\/([A-Z0-9]{10})/,
+        /\/product\/([A-Z0-9]{10})/,
+        /\/ASIN\/([A-Z0-9]{10})/,
+        /asin=([A-Z0-9]{10})/i,
+      ];
+      
+      for (const pattern of asinPatterns) {
+        const match = productUrl.match(pattern);
+        if (match && match[1]) {
+          return match[1];
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error extracting ASIN:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Validates if a URL is a valid Amazon product URL
+   */
+  static isValidAmazonUrl(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      const validDomains = [
+        'amazon.co.uk',
+        'amazon.com',
+        'amazon.de',
+        'amazon.fr',
+        'amazon.it',
+        'amazon.es',
+        'amazon.ca',
+        'amazon.com.au',
+        'amazon.co.jp',
+      ];
+      
+      return validDomains.some(domain => urlObj.hostname.includes(domain));
+    } catch (error) {
+      return false;
+    }
+  }
+  
+  /**
+   * Gets commission rate for a given product category
+   */
+  static getCommissionRate(category: string): number {
+    const normalizedCategory = category.toLowerCase().replace(/\s+/g, '');
+    
+    // Map to commission rates
+    const categoryMappings: Record<string, keyof typeof amazonConfig.commissionRates> = {
+      'electronics': 'electronics',
+      'fashion': 'fashion',
+      'clothing': 'fashion',
+      'homeandgarden': 'homeAndGarden',
+      'home': 'homeAndGarden',
+      'garden': 'homeAndGarden',
+      'sportsandoutdoors': 'sportsAndOutdoors',
+      'sports': 'sportsAndOutdoors',
+      'books': 'books',
+      'toys': 'toys',
+      'toysgames': 'toys',
+      'games': 'toys',
+      'beauty': 'beautyAndPersonalCare',
+      'beautyandpersonalcare': 'beautyAndPersonalCare',
+      'personalcare': 'beautyAndPersonalCare',
+      'automotive': 'automotive',
+      'industrial': 'industrial',
+      'outdoor': 'outdoorAndGarden',
+    };
+    
+    const mappedCategory = categoryMappings[normalizedCategory];
+    return amazonConfig.commissionRates[mappedCategory] || amazonConfig.commissionRates.default;
+  }
+}
 
 // Theme configuration
 export const theme = {

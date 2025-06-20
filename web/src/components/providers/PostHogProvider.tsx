@@ -15,14 +15,33 @@ export function PostHogProvider({ children }: PostHogProviderProps) {
 
     // Track page views on route changes
     const handleRouteChange = (url: string) => {
-      trackPageView(url);
+      console.log('[PostHog Provider] Route change detected:', url);
+      
+      // Track pageview with proper properties
+      analytics.track('$pageview', {
+        $current_url: `${window.location.origin}${url}`,
+        $pathname: url,
+        $host: window.location.host,
+        $referrer: document.referrer,
+        page_title: document.title,
+      });
     };
 
     router.events.on('routeChangeComplete', handleRouteChange);
 
     // Track initial page view
     if (router.isReady) {
-      trackPageView(router.asPath);
+      console.log('[PostHog Provider] Initial page view:', router.asPath);
+      
+      // Initial pageview
+      analytics.track('$pageview', {
+        $current_url: window.location.href,
+        $pathname: router.asPath,
+        $host: window.location.host,
+        $referrer: document.referrer,
+        page_title: document.title,
+        initial_page: true,
+      });
     }
 
     return () => {

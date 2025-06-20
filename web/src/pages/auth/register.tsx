@@ -150,33 +150,38 @@ export default function RegisterPage() {
         localStorage.setItem(appConfig.storage.user, JSON.stringify(user));
       }
 
-      // Track registration event with PostHog
-      const { trackEvent, identifyUser } = await import('@/lib/analytics');
-      
-      // Identify the user
-      identifyUser(user.id, {
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        created_at: user.created_at,
-        subscription_tier: user.subscription_tier,
-      });
+      // Track registration event with PostHog (non-blocking)
+      try {
+        const { trackEvent, identifyUser } = await import('@/lib/analytics');
+        
+        // Identify the user
+        identifyUser(user.id, {
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          created_at: user.created_at,
+          subscription_tier: user.subscription_tier,
+        });
 
-      // Track registration event
-      trackEvent('user_register', {
-        method: 'email',
-        marketing_consent: data.marketing_consent,
-        user_id: user.id,
-        source: 'web',
-        timestamp: new Date().toISOString(),
-      });
+        // Track registration event
+        trackEvent('user_register', {
+          method: 'email',
+          marketing_consent: data.marketing_consent,
+          user_id: user.id,
+          source: 'web',
+          timestamp: new Date().toISOString(),
+        });
+      } catch (analyticsError) {
+        console.warn('Analytics tracking failed:', analyticsError);
+        // Don't let analytics errors affect the registration flow
+      }
 
       // Show success message
       toast.success('Account created successfully! Welcome to GiftSync.');
 
-      // Redirect to onboarding or dashboard
+      // Redirect to dashboard
       setTimeout(() => {
-        router.push('/onboarding');
+        router.push('/dashboard');
       }, 100);
     } catch (error: any) {
       console.error('Registration error:', error);

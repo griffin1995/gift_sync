@@ -272,15 +272,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update state
       dispatch({ type: 'SET_USER', payload: user });
 
-      // Track registration event
+      // Track registration event with PostHog
       try {
-        await api.trackEvent({
-          event_name: 'user_register',
-          properties: {
-            method: 'email',
-            user_id: user.id,
-            timestamp: new Date().toISOString(),
-          },
+        const { trackEvent, identifyUser } = await import('@/lib/analytics');
+        
+        // Identify the user
+        identifyUser(user.id, {
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          created_at: user.created_at,
+          subscription_tier: user.subscription_tier,
+        });
+
+        // Track registration event
+        trackEvent('user_register', {
+          method: 'email',
+          marketing_consent: userData.marketing_consent,
+          user_id: user.id,
+          source: 'web',
+          timestamp: new Date().toISOString(),
         });
       } catch (trackingError) {
         console.warn('Failed to track registration event:', trackingError);

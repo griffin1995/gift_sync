@@ -1,28 +1,61 @@
 import posthog from 'posthog-js';
 import { config } from '@/config';
+import { createPostHogConfig, validateEvent, getCommonEventProperties } from './posthog-config';
 
 // PostHog Analytics Service
 class AnalyticsService {
   private initialized = false;
+  private retryCount = 0;
+  private maxRetries = 3;
 
-  init() {
-    if (typeof window !== 'undefined' && !this.initialized && config.posthogKey) {
-      posthog.init(config.posthogKey, {
-        api_host: config.posthogHost || 'https://app.posthog.com',
-        person_profiles: 'identified_only',
-        capture_pageview: true,
-        capture_pageleave: true,
-        debug: config.isDevelopment,
-        autocapture: {
-          dom_event_allowlist: ['click', 'change', 'submit'],
-        },
-        session_recording: {
-          recordCrossOriginIframes: false,
-        },
-        disable_session_recording: !config.isProduction,
+  async init() {
+    if (typeof window === 'undefined' || this.initialized || !config.posthogKey) {
+      return;
+    }
+
+    try {
+      const posthogConfig = createPostHogConfig();
+      
+      console.log('[PostHog] Initializing analytics service...', {
+        key: config.posthogKey?.substring(0, 10) + '...',
+        host: posthogConfig.api_host,
+        debug: posthogConfig.debug,
       });
+
+      posthog.init(config.posthogKey, posthogConfig);
       
       this.initialized = true;
+      this.retryCount = 0;
+
+      // Test connectivity
+      await this.testConnection();
+      
+    } catch (error) {
+      console.error('[PostHog] Initialization failed:', error);
+      
+      // Retry initialization
+      if (this.retryCount < this.maxRetries) {
+        this.retryCount++;
+        console.log(`[PostHog] Retrying initialization (${this.retryCount}/${this.maxRetries})...`);
+        setTimeout(() => this.init(), 1000 * this.retryCount);
+      }
+    }
+  }
+
+  private async testConnection(): Promise<void> {
+    if (!this.initialized) return;
+
+    try {
+      // Send a test event to verify connectivity
+      this.track('analytics_service_initialized', {
+        ...getCommonEventProperties(),
+        initialization_time: Date.now(),
+        retry_count: this.retryCount,
+      });
+      
+      console.log('[PostHog] Connection test successful');
+    } catch (error) {
+      console.warn('[PostHog] Connection test failed:', error);
     }
   }
 
@@ -35,8 +68,25 @@ class AnalyticsService {
 
   // Track events
   track(eventName: string, properties?: Record<string, any>) {
-    if (this.initialized) {
-      posthog.capture(eventName, properties);
+    if (!this.initialized) {
+      console.warn('[PostHog] Analytics not initialized, queueing event:', eventName);
+      return;
+    }
+
+    if (!validateEvent(eventName, properties)) {
+      return;
+    }
+
+    try {
+      const enrichedProperties = {
+        ...getCommonEventProperties(),
+        ...properties,
+      };
+
+      console.log('[PostHog] Tracking event:', eventName, enrichedProperties);
+      posthog.capture(eventName, enrichedProperties);
+    } catch (error) {
+      console.error('[PostHog] Failed to track event:', eventName, error);
     }
   }
 
