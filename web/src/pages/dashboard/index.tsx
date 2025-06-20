@@ -64,7 +64,9 @@ export default function DashboardPage() {
       // Load recent recommendations (optional)
       try {
         const recommendationsResponse = await api.getRecommendations({ limit: 6 });
-        setRecommendations(recommendationsResponse.data);
+        // Handle different response formats - sometimes data is wrapped, sometimes direct
+        const recommendationsData = recommendationsResponse.data || recommendationsResponse;
+        setRecommendations(Array.isArray(recommendationsData) ? recommendationsData : []);
       } catch (error) {
         console.warn('Recommendations not available:', error);
         setRecommendations([]);
@@ -73,7 +75,9 @@ export default function DashboardPage() {
       // Load gift links (optional)
       try {
         const giftLinksResponse = await api.getGiftLinks();
-        setGiftLinks(giftLinksResponse.data);
+        // Handle different response formats - sometimes data is wrapped, sometimes direct
+        const giftLinksData = giftLinksResponse.data || giftLinksResponse;
+        setGiftLinks(Array.isArray(giftLinksData) ? giftLinksData : []);
       } catch (error) {
         console.warn('Gift links not available:', error);
         setGiftLinks([]);
@@ -82,7 +86,9 @@ export default function DashboardPage() {
       // Load user statistics (optional)
       try {
         const statsResponse = await api.getUserStatistics();
-        setStatistics(statsResponse.data);
+        // Handle different response formats - sometimes data is wrapped, sometimes direct
+        const statsData = statsResponse.data || statsResponse;
+        setStatistics(statsData);
       } catch (error) {
         console.warn('Statistics not available:', error);
         setStatistics({
@@ -340,7 +346,7 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Recent Recommendations */}
-          {recommendations.length > 0 && (
+          {recommendations && recommendations.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -358,32 +364,42 @@ export default function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recommendations.slice(0, 6).map((recommendation) => (
+                {(recommendations || []).slice(0, 6).map((recommendation) => (
                   <div
                     key={recommendation.id}
                     className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
                   >
-                    <div className="relative h-48">
-                      <Image
-                        src={recommendation.product.image_url}
-                        alt={recommendation.product.name}
-                        fill
-                        className="object-cover"
-                      />
+                    <div className="relative h-48 bg-gray-100 flex items-center justify-center">
+                      {recommendation.product.image_url ? (
+                        <Image
+                          src={recommendation.product.image_url}
+                          alt={recommendation.product.title || 'Product'}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="text-gray-400 text-center">
+                          <Gift className="w-12 h-12 mx-auto mb-2" />
+                          <span className="text-sm">Product Image</span>
+                        </div>
+                      )}
                       <div className="absolute top-3 left-3">
                         <div className="bg-primary-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                           <Star className="w-3 h-3 fill-current" />
-                          {Math.round(recommendation.score * 100)}% match
+                          {Math.round((recommendation.confidence_score || 0) * 100)}% match
                         </div>
                       </div>
                     </div>
                     
                     <div className="p-4">
                       <h3 className="font-medium text-gray-900 line-clamp-2 mb-2">
-                        {recommendation.product.name}
+                        {recommendation.product.title}
                       </h3>
                       <p className="text-primary-600 font-semibold">
-                        ${recommendation.product.price}
+                        ${recommendation.product.price_min}
+                        {recommendation.product.price_max && recommendation.product.price_max !== recommendation.product.price_min && 
+                          ` - $${recommendation.product.price_max}`
+                        }
                       </p>
                       <p className="text-xs text-gray-500 mt-2">
                         {recommendation.product.brand}
@@ -396,7 +412,7 @@ export default function DashboardPage() {
           )}
 
           {/* Recent Gift Links */}
-          {giftLinks.length > 0 && (
+          {giftLinks && giftLinks.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -414,7 +430,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {giftLinks.slice(0, 4).map((giftLink) => (
+                {(giftLinks || []).slice(0, 4).map((giftLink) => (
                   <div
                     key={giftLink.id}
                     className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"

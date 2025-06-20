@@ -34,8 +34,17 @@ class TokenManager {
   static getInstance(): TokenManager {
     if (!TokenManager.instance) {
       TokenManager.instance = new TokenManager();
+      // Initialize tokens from localStorage on first creation
+      TokenManager.instance.initializeFromStorage();
     }
     return TokenManager.instance;
+  }
+
+  private initializeFromStorage(): void {
+    if (typeof window !== 'undefined') {
+      this.accessToken = localStorage.getItem(appConfig.storage.authToken);
+      this.refreshToken = localStorage.getItem(appConfig.storage.refreshToken);
+    }
   }
 
   setTokens(accessToken: string, refreshToken: string): void {

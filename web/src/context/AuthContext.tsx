@@ -140,18 +140,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Verify token with backend
         try {
           const response = await api.getCurrentUser();
-          dispatch({ type: 'SET_USER', payload: response.data });
+          // Handle different response formats - sometimes data is wrapped, sometimes direct
+          const userData = response.data || response;
+          dispatch({ type: 'SET_USER', payload: userData });
           
           // Update stored user data
-          localStorage.setItem(appConfig.storage.user, JSON.stringify(response.data));
+          localStorage.setItem(appConfig.storage.user, JSON.stringify(userData));
         } catch (error: any) {
           console.error('Token verification failed:', error);
           
-          // Try to refresh token
-          try {
-            await refreshTokenInternal();
-          } catch (refreshError) {
-            console.error('Token refresh failed:', refreshError);
+          // Only try to refresh if we have a refresh token
+          const refreshToken = tokenManager.getRefreshToken();
+          if (refreshToken) {
+            try {
+              await refreshTokenInternal();
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError);
+              await logoutInternal();
+            }
+          } else {
+            console.warn('No refresh token available, clearing session');
             await logoutInternal();
           }
         }
