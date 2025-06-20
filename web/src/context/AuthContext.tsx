@@ -222,15 +222,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update state
       dispatch({ type: 'SET_USER', payload: user });
 
-      // Track login event
+      // Track login event with PostHog
       try {
-        await api.trackEvent({
-          event_name: 'user_login',
-          properties: {
-            method: 'email',
-            user_id: user.id,
-            timestamp: new Date().toISOString(),
-          },
+        const { trackEvent, identifyUser } = await import('@/lib/analytics');
+        
+        // Identify the user
+        identifyUser(user.id, {
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          subscription_tier: user.subscription_tier,
+        });
+
+        // Track login event
+        trackEvent('user_login', {
+          method: 'email',
+          user_id: user.id,
+          timestamp: new Date().toISOString(),
         });
       } catch (trackingError) {
         console.warn('Failed to track login event:', trackingError);
@@ -301,16 +309,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.warn('Logout API call failed:', error);
       }
 
-      // Track logout event
+      // Track logout event with PostHog
       if (state.user) {
         try {
-          await api.trackEvent({
-            event_name: 'user_logout',
-            properties: {
-              user_id: state.user.id,
-              timestamp: new Date().toISOString(),
-            },
+          const { trackEvent, analytics } = await import('@/lib/analytics');
+          
+          trackEvent('user_logout', {
+            user_id: state.user.id,
+            timestamp: new Date().toISOString(),
           });
+
+          // Reset PostHog user session
+          analytics.reset();
         } catch (trackingError) {
           console.warn('Failed to track logout event:', trackingError);
         }

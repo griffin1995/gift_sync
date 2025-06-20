@@ -469,6 +469,8 @@ export interface EnvironmentConfig {
   mixpanelToken?: string;
   sentryDsn?: string;
   googleAnalyticsId?: string;
+  posthogKey?: string;
+  posthogHost?: string;
   isProduction: boolean;
   isDevelopment: boolean;
   version: string;

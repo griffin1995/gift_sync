@@ -7,6 +7,8 @@ export const config: EnvironmentConfig = {
   mixpanelToken: process.env.NEXT_PUBLIC_MIXPANEL_TOKEN,
   sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   googleAnalyticsId: process.env.NEXT_PUBLIC_GA_ID,
+  posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+  posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   isProduction: process.env.NODE_ENV === 'production',
   isDevelopment: process.env.NODE_ENV === 'development',
   version: process.env.npm_package_version || '1.0.0',

@@ -150,18 +150,29 @@ export default function RegisterPage() {
         localStorage.setItem(appConfig.storage.user, JSON.stringify(user));
       }
 
-      // Track registration event
-      await api.trackEvent({
-        event_name: 'user_register',
-        properties: {
-          method: 'email',
-          marketing_consent: data.marketing_consent,
-          user_id: user.id,
-          source: 'web',
-        },
+      // Track registration event with PostHog
+      const { trackEvent, identifyUser } = await import('@/lib/analytics');
+      
+      // Identify the user
+      identifyUser(user.id, {
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        created_at: user.created_at,
+        subscription_tier: user.subscription_tier,
       });
 
-      toast.success(appConfig.success.register);
+      // Track registration event
+      trackEvent('user_register', {
+        method: 'email',
+        marketing_consent: data.marketing_consent,
+        user_id: user.id,
+        source: 'web',
+        timestamp: new Date().toISOString(),
+      });
+
+      // Show success message
+      toast.success('Account created successfully! Welcome to GiftSync.');
 
       // Redirect to onboarding or dashboard
       setTimeout(() => {

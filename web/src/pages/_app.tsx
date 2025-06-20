@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import '@/styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -18,12 +19,13 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AuthGuard>
-          <Component {...pageProps} />
-        </AuthGuard>
-        <Toaster
+    <PostHogProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AuthGuard>
+            <Component {...pageProps} />
+          </AuthGuard>
+          <Toaster
           position="top-right"
           toastOptions={{
             duration: 5000,
@@ -50,8 +52,9 @@ export default function App({ Component, pageProps }: AppProps) {
               },
             },
           }}
-        />
-      </AuthProvider>
-    </ThemeProvider>
+          />
+        </AuthProvider>
+      </ThemeProvider>
+    </PostHogProvider>
   );
 }
