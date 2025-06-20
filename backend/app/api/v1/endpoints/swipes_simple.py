@@ -70,7 +70,8 @@ async def get_user_swipe_sessions(
             "swipe_sessions",
             select="*",
             filters=filters,
-            limit=limit
+            limit=limit,
+            use_service_key=True  # Use service key to bypass RLS
         )
         
         return sessions
@@ -103,7 +104,8 @@ async def get_swipe_session(
         
         sessions = await supabase.select(
             "swipe_sessions",
-            filters={"id": session_id, "user_id": user_id}
+            filters={"id": session_id, "user_id": user_id},
+            use_service_key=True
         )
         
         if not sessions:
@@ -140,7 +142,8 @@ async def complete_swipe_session(
         # Check if session exists and belongs to user
         sessions = await supabase.select(
             "swipe_sessions",
-            filters={"id": session_id, "user_id": user_id}
+            filters={"id": session_id, "user_id": user_id},
+            use_service_key=True
         )
         
         if not sessions:
@@ -194,7 +197,8 @@ async def create_swipe_interaction(
             sessions = await supabase.select(
                 "swipe_sessions",
                 filters={"id": session_id, "user_id": user_id},
-                limit=1
+                limit=1,
+                use_service_key=True
             )
             if not sessions:
                 raise HTTPException(status_code=404, detail="Swipe session not found or unauthorized")
@@ -256,7 +260,8 @@ async def get_session_interactions(
         sessions = await supabase.select(
             "swipe_sessions",
             filters={"id": session_id, "user_id": user_id},
-            limit=1
+            limit=1,
+            use_service_key=True
         )
         if not sessions:
             raise HTTPException(status_code=404, detail="Swipe session not found or unauthorized")
@@ -271,7 +276,8 @@ async def get_session_interactions(
             "swipe_interactions",
             select="*",
             filters=filters,
-            limit=limit
+            limit=limit,
+            use_service_key=True
         )
         
         return interactions
@@ -299,7 +305,8 @@ async def get_user_preferences(
         interactions = await supabase.select(
             "swipe_interactions",
             select="*",
-            filters={"user_id": user_id}
+            filters={"user_id": user_id},
+            use_service_key=True
         )
         
         if not interactions:
@@ -330,7 +337,8 @@ async def get_user_preferences(
                     "categories",
                     select="name",
                     filters={"id": cat_id},
-                    limit=1
+                    limit=1,
+                    use_service_key=True
                 )
                 if categories:
                     favorite_categories.append({
@@ -378,7 +386,8 @@ async def delete_swipe_session(
         sessions = await supabase.select(
             "swipe_sessions",
             filters={"id": session_id, "user_id": user_id},
-            limit=1
+            limit=1,
+            use_service_key=True
         )
         if not sessions:
             raise HTTPException(status_code=404, detail="Swipe session not found or unauthorized")
