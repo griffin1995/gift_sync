@@ -25,7 +25,6 @@ interface EnhancedSwipeCardProps {
 export const EnhancedSwipeCard: React.FC<EnhancedSwipeCardProps> = ({
   product,
   onSwipe,
-  style,
   className = '',
 }) => {
   const [isExiting, setIsExiting] = useState(false);
@@ -42,7 +41,7 @@ export const EnhancedSwipeCard: React.FC<EnhancedSwipeCardProps> = ({
   const passOpacity = useTransform(x, [-100, 0], [1, 0]);
   const superLikeOpacity = useTransform(y, [-100, 0], [1, 0]);
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const threshold = 100;
     const velocity = info.velocity.x;
     
@@ -68,9 +67,8 @@ export const EnhancedSwipeCard: React.FC<EnhancedSwipeCardProps> = ({
   return (
     <div className="relative w-full max-w-sm mx-auto perspective-1000">
       <motion.div
-        className={`swipe-card w-full h-[600px] ${className}`}
+        className={`swipe-card w-full h-[600px] relative bg-white rounded-3xl shadow-glow overflow-hidden cursor-grab active:cursor-grabbing select-none ${className}`}
         style={{
-          ...style,
           x,
           y,
           rotate,
@@ -90,7 +88,6 @@ export const EnhancedSwipeCard: React.FC<EnhancedSwipeCardProps> = ({
           transition: { duration: 0.3 }
         }}
         whileTap={{ scale: 0.95 }}
-        className="relative bg-white rounded-3xl shadow-glow overflow-hidden cursor-grab active:cursor-grabbing select-none"
       >
         {/* Swipe Feedback Overlays */}
         <motion.div

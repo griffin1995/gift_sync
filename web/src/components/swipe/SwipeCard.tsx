@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
-import { Heart, X, Star, Share2, ExternalLink, ShoppingBag, Sparkles } from 'lucide-react';
+import { Heart, X, Star, ExternalLink, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { Product, SwipeGesture } from '@/types';
 import { appConfig } from '@/config';
@@ -57,7 +57,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
   };
 
   // Handle pan end
-  const handlePanEnd = (event: any, info: PanInfo) => {
+  const handlePanEnd = (_event: any, info: PanInfo) => {
     setIsDragging(false);
     
     const { offset, velocity } = info;

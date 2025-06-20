@@ -48,18 +48,6 @@ export function NotificationCenter({ className = '' }: NotificationCenterProps) 
     }
   };
 
-  const getNotificationStyle = (type: Notification['type']) => {
-    switch (type) {
-      case 'success':
-        return 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800';
-      case 'error':
-        return 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800';
-      case 'warning':
-        return 'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800';
-      default:
-        return 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800';
-    }
-  };
 
   return (
     <div className={`relative ${className}`}>

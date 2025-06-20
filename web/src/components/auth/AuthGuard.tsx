@@ -27,20 +27,20 @@ const AUTH_ROUTES = [
 ];
 
 // Public routes that don't require any auth logic
-const PUBLIC_ROUTES = [
-  '/',
-  '/about',
-  '/contact',
-  '/privacy',
-  '/terms',
-  '/pricing',
-  '/404',
-];
+// const PUBLIC_ROUTES = [
+//   '/',
+//   '/about',
+//   '/contact',
+//   '/privacy',
+//   '/terms',
+//   '/pricing',
+//   '/404',
+// ];
 
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const { isAuthenticated, isInitialized, isLoading, isLoggingOut } = useAuth();
   const router = useRouter();
-  const currentPath = router.asPath.split('?')[0]; // Remove query params
+  const currentPath = router.asPath?.split('?')[0] || '/'; // Remove query params
 
   useEffect(() => {
     if (!isInitialized) return;

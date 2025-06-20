@@ -5,17 +5,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "outputDirectory": ".next",
-  "functions": {
-    "src/pages/api/**/*.ts": {
-      "runtime": "@vercel/node"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/v1/(.*)",
-      "destination": "$BACKEND_URL/api/v1/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -62,6 +51,6 @@
     "NEXT_PUBLIC_APP_VERSION": "1.0.0",
     "NEXT_PUBLIC_APP_DESCRIPTION": "AI-powered gift recommendation platform"
   },
-  "regions": ["lhr1", "syd1", "hnd1", "iad1"],
+  "regions": ["iad1"],
   "crons": []
 }

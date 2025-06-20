@@ -26,8 +26,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If auth is required but user is not authenticated
   if (requireAuth && !isAuthenticated) {
-    // This will be handled by the useRequireAuth hook in the AuthContext
-    // Just show loading while redirect happens
+    // Redirect to login with the specified redirect path
+    const currentPath = router.asPath;
+    const loginUrl = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`;
+    router.replace(loginUrl);
     return <PageLoader text="Redirecting to login..." />;
   }
 

@@ -9,7 +9,6 @@ import {
   TagIcon,
   BuildingStorefrontIcon,
   Squares2X2Icon,
-  CheckIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useSearch, SearchFilters as SearchFiltersType } from '@/hooks/useSearch';
@@ -23,7 +22,7 @@ interface SearchFiltersProps {
 interface FilterSection {
   id: keyof SearchFiltersType;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<any>;
   type: 'checkboxes' | 'range' | 'rating' | 'radio';
   options?: { value: string; label: string; count?: number }[];
 }
@@ -75,7 +74,7 @@ const filterSections: FilterSection[] = [
   },
 ];
 
-export function SearchFilters({ className = '', orientation = 'vertical', collapsible = true }: SearchFiltersProps) {
+export function SearchFilters({ className = '', collapsible = true }: SearchFiltersProps) {
   const { filters, setFilters, resetFilters } = useSearch();
   const [isExpanded, setIsExpanded] = useState(!collapsible);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
