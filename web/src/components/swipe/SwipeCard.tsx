@@ -4,6 +4,7 @@ import { Heart, X, Star, ExternalLink, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { Product, SwipeGesture } from '@/types';
 import { appConfig } from '@/config';
+import { generateAffiliateLink, trackAffiliateClick, isValidAmazonUrl, extractASIN } from '@/lib/affiliate';
 
 interface SwipeCardProps {
   product: Product;
@@ -142,9 +143,37 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
     onSwipe('up', gesture);
   };
 
-  const handleProductClick = () => {
+  const handleProductClick = async () => {
     if (onProductClick) {
       onProductClick(product);
+    }
+    
+    // Generate affiliate link and track click if it's an Amazon product
+    if (product.url && isValidAmazonUrl(product.url)) {
+      const affiliateUrl = generateAffiliateLink(product.url, {
+        campaign: 'gift_recommendation',
+        medium: 'swipe_interface',
+        source: 'product_click',
+        content: 'swipe_card'
+      });
+      
+      // Track the affiliate click
+      await trackAffiliateClick({
+        productId: product.id,
+        asin: extractASIN(product.url),
+        category: product.category.name,
+        price: product.price,
+        currency: product.currency || 'GBP',
+        affiliateUrl,
+        originalUrl: product.url,
+        source: 'recommendation'
+      });
+      
+      // Open affiliate link in new tab
+      window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
+    } else if (product.url) {
+      // Open regular product link
+      window.open(product.url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -283,6 +312,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
               <button
                 onClick={handleProductClick}
                 className="ml-2 p-2 text-gray-400 hover:text-primary-600 transition-colors"
+                title={product.url && isValidAmazonUrl(product.url) ? 'View on Amazon (affiliate link)' : 'View product'}
               >
                 <ExternalLink className="w-4 h-4" />
               </button>
@@ -301,7 +331,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
             </div>
 
             {/* Category */}
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
               <span className="px-2 py-1 bg-gray-100 rounded-full">
                 {product.category.name}
               </span>
@@ -309,6 +339,7 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
                 {product.availability}
               </span>
             </div>
+
           </div>
 
           {/* Action Buttons */}

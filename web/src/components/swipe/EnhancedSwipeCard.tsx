@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
-import { Heart, X, Star, Zap, ShoppingBag, Share2 } from 'lucide-react';
+import { Heart, X, Star, Zap, ShoppingBag, Share2, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
+import { generateAffiliateLink, trackAffiliateClick, isValidAmazonUrl, extractASIN } from '@/lib/affiliate';
 
 interface Product {
   id: string;
@@ -13,6 +14,8 @@ interface Product {
   category: string;
   brand?: string;
   features?: string[];
+  url?: string;
+  currency?: string;
 }
 
 interface EnhancedSwipeCardProps {
@@ -62,6 +65,36 @@ export const EnhancedSwipeCard: React.FC<EnhancedSwipeCardProps> = ({
   const handleButtonAction = (action: 'left' | 'right' | 'up') => {
     setIsExiting(true);
     onSwipe(action);
+  };
+
+  const handleProductClick = async () => {
+    // Generate affiliate link and track click if it's an Amazon product
+    if (product.url && isValidAmazonUrl(product.url)) {
+      const affiliateUrl = generateAffiliateLink(product.url, {
+        campaign: 'gift_recommendation',
+        medium: 'enhanced_swipe_interface',
+        source: 'product_click',
+        content: 'enhanced_swipe_card'
+      });
+      
+      // Track the affiliate click
+      await trackAffiliateClick({
+        productId: product.id,
+        asin: extractASIN(product.url),
+        category: product.category,
+        price: product.price,
+        currency: product.currency || 'GBP',
+        affiliateUrl,
+        originalUrl: product.url,
+        source: 'recommendation'
+      });
+      
+      // Open affiliate link in new tab
+      window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
+    } else if (product.url) {
+      // Open regular product link
+      window.open(product.url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -146,9 +179,23 @@ export const EnhancedSwipeCard: React.FC<EnhancedSwipeCardProps> = ({
           {/* Price Badge */}
           <div className="absolute top-4 right-4">
             <span className="bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-              ${product.price}
+              {new Intl.NumberFormat('en-GB', {
+                style: 'currency',
+                currency: product.currency || 'GBP',
+              }).format(product.price)}
             </span>
           </div>
+
+          {/* Product Link Button */}
+          {product.url && (
+            <button
+              onClick={handleProductClick}
+              className="absolute bottom-4 right-4 glass-light p-2 rounded-full hover:bg-white hover:shadow-lg transition-all"
+              title={isValidAmazonUrl(product.url) ? 'View on Amazon (affiliate link)' : 'View product'}
+            >
+              <ExternalLink className="w-4 h-4 text-gray-700" />
+            </button>
+          )}
 
           {/* Rating */}
           {product.rating && (
@@ -188,6 +235,8 @@ export const EnhancedSwipeCard: React.FC<EnhancedSwipeCardProps> = ({
               ))}
             </div>
           )}
+
+          {/* Affiliate Disclosure for Amazon Products */}
         </div>
 
         {/* Action Buttons */}

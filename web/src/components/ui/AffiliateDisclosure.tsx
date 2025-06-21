@@ -120,15 +120,15 @@ export const AffiliateDisclosure: React.FC<AffiliateDisclosureProps> = ({
   if (variant === 'inline') {
     return (
       <div className={combinedClasses}>
-        <div className=\"flex items-start gap-2\">
+        <div className="flex items-start gap-2">
           {showIcon && (
-            <Icon className=\"w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0\" />
+            <Icon className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
           )}
-          <span className=\"text-gray-700 text-xs italic\">
+          <span className="text-gray-700 text-xs italic">
             {finalText}
             <Link 
-              href=\"/affiliate-disclosure\" 
-              className=\"ml-1 text-blue-600 hover:text-blue-800 underline\"
+              href="/affiliate-disclosure" 
+              className="ml-1 text-blue-600 hover:text-blue-800 underline"
             >
               Learn more
             </Link>
@@ -141,26 +141,26 @@ export const AffiliateDisclosure: React.FC<AffiliateDisclosureProps> = ({
   if (variant === 'footer') {
     return (
       <div className={combinedClasses}>
-        <div className=\"text-center text-gray-600\">
-          <p className=\"text-sm\">
+        <div className="text-center text-gray-600">
+          <p className="text-sm">
             {finalText}
           </p>
-          <div className=\"mt-2 flex justify-center items-center gap-4 text-xs\">
+          <div className="mt-2 flex justify-center items-center gap-4 text-xs">
             <Link 
-              href=\"/affiliate-disclosure\" 
-              className=\"text-blue-600 hover:text-blue-800 underline flex items-center gap-1\"
+              href="/affiliate-disclosure" 
+              className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
             >
-              Full Disclosure <ExternalLink className=\"w-3 h-3\" />
+              Full Disclosure <ExternalLink className="w-3 h-3" />
             </Link>
             <Link 
-              href=\"/privacy\" 
-              className=\"text-blue-600 hover:text-blue-800 underline\"
+              href="/privacy" 
+              className="text-blue-600 hover:text-blue-800 underline"
             >
               Privacy Policy
             </Link>
             <Link 
-              href=\"/terms\" 
-              className=\"text-blue-600 hover:text-blue-800 underline\"
+              href="/terms" 
+              className="text-blue-600 hover:text-blue-800 underline"
             >
               Terms of Service
             </Link>
@@ -172,24 +172,24 @@ export const AffiliateDisclosure: React.FC<AffiliateDisclosureProps> = ({
   
   return (
     <div className={combinedClasses}>
-      <div className=\"flex items-start justify-between gap-3\">
-        <div className=\"flex items-start gap-3 flex-1\">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 flex-1">
           {showIcon && (
-            <Icon className=\"w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0\" />
+            <Icon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           )}
-          <div className=\"flex-1\">
+          <div className="flex-1">
             {title && (
-              <h4 className=\"font-semibold text-gray-900 mb-1\">{title}</h4>
+              <h4 className="font-semibold text-gray-900 mb-1">{title}</h4>
             )}
-            <p className=\"text-gray-700 leading-relaxed\">
+            <p className="text-gray-700 leading-relaxed">
               {finalText}
             </p>
-            <div className=\"mt-2\">
+            <div className="mt-2">
               <Link 
-                href=\"/affiliate-disclosure\" 
-                className=\"text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1\"
+                href="/affiliate-disclosure" 
+                className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1"
               >
-                Read our full affiliate disclosure <ExternalLink className=\"w-3 h-3\" />
+                Read our full affiliate disclosure <ExternalLink className="w-3 h-3" />
               </Link>
             </div>
           </div>
@@ -198,11 +198,11 @@ export const AffiliateDisclosure: React.FC<AffiliateDisclosureProps> = ({
         {isDismissible && (
           <button
             onClick={handleDismiss}
-            className=\"text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0\"
-            aria-label=\"Dismiss disclosure\"
+            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+            aria-label="Dismiss disclosure"
           >
-            <svg className=\"w-5 h-5\" fill=\"currentColor\" viewBox=\"0 0 20 20\">
-              <path fillRule=\"evenodd\" d=\"M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z\" clipRule=\"evenodd\" />
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
         )}

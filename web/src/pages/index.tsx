@@ -637,62 +637,163 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <Gift className="w-5 h-5 text-white" />
+      <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+            backgroundSize: '20px 20px'
+          }}></div>
+        </div>
+        
+        <div className="relative">
+          {/* Main Footer Content */}
+          <div className="max-w-7xl mx-auto px-6 py-16 lg:px-8">
+            <div className="grid lg:grid-cols-5 gap-12">
+              {/* Brand Section */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="relative">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
+                      <Gift className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute -inset-1 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl opacity-20 blur-sm"></div>
+                  </div>
+                  <span className="text-2xl font-bold text-white">GiftSync</span>
                 </div>
-                <span className="text-xl font-bold">GiftSync</span>
+                
+                <p className="text-slate-300 mb-8 text-lg leading-relaxed max-w-md">
+                  AI-powered gift recommendations that understand your style and surprise your loved ones.
+                </p>
+                
+                {/* Social Links */}
+                <div className="flex items-center gap-4">
+                  <span className="text-slate-400 text-sm font-medium">Follow us</span>
+                  <div className="flex gap-3">
+                    {[
+                      { name: 'Twitter', icon: '𝕏', href: '#' },
+                      { name: 'Instagram', icon: '📷', href: '#' },
+                      { name: 'LinkedIn', icon: '💼', href: '#' }
+                    ].map((social) => (
+                      <a
+                        key={social.name}
+                        href={social.href}
+                        className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                        aria-label={social.name}
+                      >
+                        <span className="text-lg">{social.icon}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <p className="text-gray-400 mb-4 text-sm md:text-base">
-                AI-powered gift recommendations that actually make sense.
-              </p>
-              <div className="flex gap-4">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Twitter
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Facebook
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Instagram
-                </a>
+              
+              {/* Navigation Columns */}
+              <div className="grid sm:grid-cols-3 gap-8 lg:col-span-3">
+                {/* Product */}
+                <div>
+                  <h3 className="font-semibold text-white mb-6 text-sm uppercase tracking-wider">Product</h3>
+                  <ul className="space-y-4">
+                    {[
+                      { name: 'How it Works', href: '/help' },
+                      { name: 'Try Demo', href: '/discover' },
+                      { name: 'Pricing', href: '/pricing' },
+                      { name: 'Mobile App', href: '#', badge: 'Soon' }
+                    ].map((item) => (
+                      <li key={item.name}>
+                        <Link 
+                          href={item.href}
+                          className="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors duration-200"
+                        >
+                          <span>{item.name}</span>
+                          {item.badge && (
+                            <span className="px-2 py-0.5 bg-primary-500 text-white text-xs rounded-full font-medium">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Company */}
+                <div>
+                  <h3 className="font-semibold text-white mb-6 text-sm uppercase tracking-wider">Company</h3>
+                  <ul className="space-y-4">
+                    {[
+                      { name: 'About Us', href: '/about' },
+                      { name: 'Contact', href: '/contact' },
+                      { name: 'Careers', href: '/careers', badge: 'Hiring' },
+                      { name: 'Press Kit', href: '#' }
+                    ].map((item) => (
+                      <li key={item.name}>
+                        <Link 
+                          href={item.href}
+                          className="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors duration-200"
+                        >
+                          <span>{item.name}</span>
+                          {item.badge && (
+                            <span className="px-2 py-0.5 bg-green-500 text-white text-xs rounded-full font-medium">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Support & Legal */}
+                <div>
+                  <h3 className="font-semibold text-white mb-6 text-sm uppercase tracking-wider">Support</h3>
+                  <ul className="space-y-4">
+                    {[
+                      { name: 'Help Centre', href: '/help' },
+                      { name: 'Privacy Policy', href: '/privacy' },
+                      { name: 'Terms of Service', href: '/terms' },
+                      { name: 'Accessibility', href: '/accessibility' },
+                      { name: 'Cookie Policy', href: '/cookie-policy' }
+                    ].map((item) => (
+                      <li key={item.name}>
+                        <Link 
+                          href={item.href}
+                          className="text-slate-400 hover:text-white transition-colors duration-200"
+                        >
+                          {item.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4 text-sm md:text-base">Product</h3>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/discover" className="hover:text-white transition-colors">Try Demo</Link></li>
-                <li><Link href="/auth/register" className="hover:text-white transition-colors">Sign Up</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4 text-sm md:text-base">Company</h3>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4 text-sm md:text-base">Support</h3>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Centre</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms</Link></li>
-              </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p className="text-sm">&copy; 2024 GiftSync. All rights reserved.</p>
+          {/* Bottom Bar */}
+          <div className="border-t border-slate-700/50">
+            <div className="max-w-7xl mx-auto px-6 py-8 lg:px-8">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex flex-col md:flex-row items-center gap-6 text-slate-400 text-sm">
+                  <span>&copy; 2025 GiftSync. All rights reserved.</span>
+                  <div className="flex items-center gap-1 text-xs">
+                    <span>🇬🇧</span>
+                    <span>Made in the UK</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col md:flex-row items-center gap-4 text-xs text-slate-500">
+                  <Link 
+                    href="/affiliate-disclosure" 
+                    className="hover:text-slate-400 transition-colors"
+                  >
+                    Amazon Associate Programme
+                  </Link>
+                  <span className="hidden md:block">•</span>
+                  <span>GDPR Compliant</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

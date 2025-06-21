@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { api, tokenManager } from '@/lib/api';
 import { Recommendation, RecommendationRequest } from '@/types';
+import { generateAffiliateLink, trackAffiliateClick, isValidAmazonUrl, extractASIN } from '@/lib/affiliate';
 import Link from 'next/link';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -113,20 +114,62 @@ export default function RecommendationsPage() {
   };
 
   // Handle external link click
-  const handleExternalClick = (recommendation: Recommendation) => {
-    // Track affiliate click
-    api.trackEvent({
-      event_name: 'affiliate_click',
-      properties: {
-        recommendation_id: recommendation.id,
-        product_id: recommendation.product.id,
-        affiliate_source: recommendation.product.affiliate_source,
-        price: recommendation.product.price,
+  const handleExternalClick = async (recommendation: Recommendation) => {
+    const product = recommendation.product;
+    
+    // Generate affiliate link and track click if it's an Amazon product
+    if (product.url && isValidAmazonUrl(product.url)) {
+      const affiliateUrl = generateAffiliateLink(product.url, {
+        campaign: 'gift_recommendation',
+        medium: 'recommendations_page',
+        source: 'view_product_button',
+        content: 'recommendation_grid'
+      });
+      
+      // Track the affiliate click
+      await trackAffiliateClick({
+        productId: product.id,
+        asin: extractASIN(product.url),
+        category: product.category?.name || 'Unknown',
+        price: product.price,
+        currency: product.currency || 'GBP',
+        affiliateUrl,
+        originalUrl: product.url,
+        source: 'recommendation'
+      });
+      
+      // Track for analytics
+      api.trackEvent({
+        event_name: 'affiliate_click',
+        properties: {
+          recommendation_id: recommendation.id,
+          product_id: product.id,
+          affiliate_source: 'amazon_associates',
+          price: product.price,
+          is_affiliate: true,
+        }
+      });
+      
+      // Open affiliate link in new tab
+      window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      // Track regular click
+      api.trackEvent({
+        event_name: 'product_click',
+        properties: {
+          recommendation_id: recommendation.id,
+          product_id: product.id,
+          price: product.price,
+          is_affiliate: false,
+        }
+      });
+      
+      // Open regular product link or affiliate URL
+      const targetUrl = product.affiliate_url || product.url;
+      if (targetUrl) {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
       }
-    });
-
-    // Open in new tab
-    window.open(recommendation.product.affiliate_url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   // Handle share recommendation
@@ -475,6 +518,7 @@ export default function RecommendationsPage() {
                           </p>
                         </div>
                       )}
+
                     </div>
                   </motion.div>
                 ))}
@@ -558,13 +602,17 @@ export default function RecommendationsPage() {
                   </div>
                 )}
 
+
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleExternalClick(selectedRecommendation)}
                     className="flex-1 bg-primary-600 text-white py-3 px-6 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
+                    title={selectedRecommendation.product.url && isValidAmazonUrl(selectedRecommendation.product.url) ? 'View on Amazon (affiliate link)' : 'View product'}
                   >
                     <ShoppingBag className="w-5 h-5" />
-                    View Product
+                    {selectedRecommendation.product.url && isValidAmazonUrl(selectedRecommendation.product.url) 
+                      ? 'View on Amazon' 
+                      : 'View Product'}
                   </button>
                   <button
                     onClick={() => handleShare(selectedRecommendation)}
