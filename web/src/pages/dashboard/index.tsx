@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { motion } from 'framer-motion';
-import { 
-  Gift, 
-  Heart, 
-  TrendingUp, 
-  Share2, 
-  User, 
+import React, { useState, useEffect } from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { motion } from "framer-motion";
+import {
+  Gift,
+  Heart,
+  TrendingUp,
+  Share2,
+  User,
   Settings,
   Sparkles,
   Calendar,
@@ -15,15 +15,15 @@ import {
   BarChart3,
   Target,
   Clock,
-  Star
-} from 'lucide-react';
-import { api, tokenManager } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
-import { formatDate } from '../../utils/formatting';
-import { User as UserType, Recommendation, GiftLink } from '@/types';
-import Link from 'next/link';
-import Image from 'next/image';
-import toast from 'react-hot-toast';
+  Star,
+} from "lucide-react";
+import { api, tokenManager } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import { formatDate } from "../../utils/formatting";
+import { User as UserType, Recommendation, GiftLink } from "@/types";
+import Link from "next/link";
+import Image from "next/image";
+import toast from "react-hot-toast";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -43,35 +43,40 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Load user data first - this is essential
       try {
         const userResponse = await api.getCurrentUser();
-        
+
         // Handle response format - sometimes data is direct, sometimes wrapped
         const userData = userResponse.data || userResponse;
         setUser(userData);
       } catch (error) {
-        console.error('Failed to load user data:', error);
-        toast.error('Failed to load user data. Please try logging in again.');
+        console.error("Failed to load user data:", error);
+        toast.error("Failed to load user data. Please try logging in again.");
         setIsLoading(false);
         return;
       }
-      
+
       // Load optional data - if these fail, dashboard should still work
       // Note: These endpoints may not be implemented in the backend yet
-      
+
       // Load recent recommendations (optional)
       try {
-        const recommendationsResponse = await api.getRecommendations({ limit: 6 });
+        const recommendationsResponse = await api.getRecommendations({
+          limit: 6,
+        });
         // Handle different response formats - sometimes data is wrapped, sometimes direct
-        const recommendationsData = recommendationsResponse.data || recommendationsResponse;
-        setRecommendations(Array.isArray(recommendationsData) ? recommendationsData : []);
+        const recommendationsData =
+          recommendationsResponse.data || recommendationsResponse;
+        setRecommendations(
+          Array.isArray(recommendationsData) ? recommendationsData : []
+        );
       } catch (error) {
-        console.warn('Recommendations not available:', error);
+        console.warn("Recommendations not available:", error);
         setRecommendations([]);
       }
-      
+
       // Load gift links (optional)
       try {
         const giftLinksResponse = await api.getGiftLinks();
@@ -79,10 +84,10 @@ export default function DashboardPage() {
         const giftLinksData = giftLinksResponse.data || giftLinksResponse;
         setGiftLinks(Array.isArray(giftLinksData) ? giftLinksData : []);
       } catch (error) {
-        console.warn('Gift links not available:', error);
+        console.warn("Gift links not available:", error);
         setGiftLinks([]);
       }
-      
+
       // Load user statistics (optional)
       try {
         const statsResponse = await api.getUserStatistics();
@@ -90,20 +95,19 @@ export default function DashboardPage() {
         const statsData = statsResponse.data || statsResponse;
         setStatistics(statsData);
       } catch (error) {
-        console.warn('Statistics not available:', error);
+        console.warn("Statistics not available:", error);
         setStatistics({
           total_swipes: 0,
           recommendations_generated: 0,
           gift_links_created: 0,
           total_savings: 0,
           favorite_categories: [],
-          activity_score: 0
+          activity_score: 0,
         }); // Set default stats to avoid loading states
       }
-      
     } catch (error) {
-      console.error('Unexpected error loading dashboard:', error);
-      toast.error('Failed to load dashboard. Please try again.');
+      console.error("Unexpected error loading dashboard:", error);
+      toast.error("Failed to load dashboard. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -116,12 +120,12 @@ export default function DashboardPage() {
       // AuthContext logout handles:
       // - Backend API call
       // - Clear all localStorage data
-      // - Update global auth state  
+      // - Update global auth state
       // - Show success toast
       // - Redirect to homepage
     } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Logout failed. Please try again.');
+      console.error("Logout error:", error);
+      toast.error("Logout failed. Please try again.");
     }
   };
 
@@ -141,7 +145,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">Failed to load user data</p>
-          <button 
+          <button
             onClick={() => router.reload()}
             className="mt-2 text-primary-600 hover:text-primary-500"
           >
@@ -154,32 +158,32 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: 'Total Swipes',
+      label: "Total Swipes",
       value: statistics?.total_swipes || 0,
       icon: <Heart className="w-5 h-5" />,
-      color: 'text-pink-600',
-      bgColor: 'bg-pink-100',
+      color: "text-pink-600",
+      bgColor: "bg-pink-100",
     },
     {
-      label: 'Recommendations',
+      label: "Recommendations",
       value: statistics?.recommendations_generated || 0,
       icon: <Sparkles className="w-5 h-5" />,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
     },
     {
-      label: 'Gift Links',
+      label: "Gift Links",
       value: statistics?.gift_links_created || 0,
       icon: <LinkIcon className="w-5 h-5" />,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
     },
     {
-      label: 'Saved',
+      label: "Saved",
       value: `$${statistics?.total_savings || 0}`,
       icon: <Target className="w-5 h-5" />,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: "text-green-600",
+      bgColor: "bg-green-100",
     },
   ];
 
@@ -187,7 +191,10 @@ export default function DashboardPage() {
     <>
       <Head>
         <title>Dashboard - GiftSync</title>
-        <meta name="description" content="Your personalized GiftSync dashboard with recommendations, gift links, and preferences." />
+        <meta
+          name="description"
+          content="Your personalised GiftSync dashboard with recommendations, gift links, and preferences."
+        />
         <meta name="robots" content="noindex" />
       </Head>
 
@@ -201,25 +208,27 @@ export default function DashboardPage() {
                 <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                   <Gift className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">GiftSync</span>
+                <span className="text-xl font-bold text-gray-900">
+                  GiftSync
+                </span>
               </Link>
 
               {/* Navigation */}
               <nav className="hidden md:flex items-center gap-6">
-                <Link 
-                  href="/discover" 
+                <Link
+                  href="/discover"
                   className="text-gray-600 hover:text-primary-600 transition-colors"
                 >
                   Discover
                 </Link>
-                <Link 
-                  href="/dashboard/recommendations" 
+                <Link
+                  href="/dashboard/recommendations"
                   className="text-gray-600 hover:text-primary-600 transition-colors"
                 >
                   Recommendations
                 </Link>
-                <Link 
-                  href="/dashboard/gift-links" 
+                <Link
+                  href="/dashboard/gift-links"
                   className="text-gray-600 hover:text-primary-600 transition-colors"
                 >
                   Gift Links
@@ -236,7 +245,7 @@ export default function DashboardPage() {
                     {user.subscription_tier} Plan
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Link
                     href="/dashboard/settings"
@@ -244,7 +253,7 @@ export default function DashboardPage() {
                   >
                     <Settings className="w-5 h-5" />
                   </Link>
-                  
+
                   <button
                     onClick={handleLogout}
                     className="text-sm text-gray-600 hover:text-red-600 transition-colors"
@@ -287,10 +296,16 @@ export default function DashboardPage() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {stat.label}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                      {stat.value}
+                    </p>
                   </div>
-                  <div className={`p-3 rounded-lg ${stat.bgColor} ${stat.color}`}>
+                  <div
+                    className={`p-3 rounded-lg ${stat.bgColor} ${stat.color}`}
+                  >
                     {stat.icon}
                   </div>
                 </div>
@@ -313,7 +328,9 @@ export default function DashboardPage() {
                 <Sparkles className="w-8 h-8" />
                 <div>
                   <h3 className="font-semibold">Discover Gifts</h3>
-                  <p className="text-primary-100 text-sm">Swipe through new products</p>
+                  <p className="text-primary-100 text-sm">
+                    Swipe through new products
+                  </p>
                 </div>
               </div>
             </Link>
@@ -326,7 +343,9 @@ export default function DashboardPage() {
                 <TrendingUp className="w-8 h-8" />
                 <div>
                   <h3 className="font-semibold">View Recommendations</h3>
-                  <p className="text-blue-100 text-sm">See your AI suggestions</p>
+                  <p className="text-blue-100 text-sm">
+                    See your AI suggestions
+                  </p>
                 </div>
               </div>
             </Link>
@@ -354,7 +373,9 @@ export default function DashboardPage() {
               className="mb-8"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Recent Recommendations</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Recent Recommendations
+                </h2>
                 <Link
                   href="/dashboard/recommendations"
                   className="text-primary-600 hover:text-primary-500 text-sm font-medium"
@@ -373,7 +394,7 @@ export default function DashboardPage() {
                       {recommendation.product.image_url ? (
                         <Image
                           src={recommendation.product.image_url}
-                          alt={recommendation.product.title || 'Product'}
+                          alt={recommendation.product.title || "Product"}
                           fill
                           className="object-cover"
                         />
@@ -386,20 +407,24 @@ export default function DashboardPage() {
                       <div className="absolute top-3 left-3">
                         <div className="bg-primary-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                           <Star className="w-3 h-3 fill-current" />
-                          {Math.round((recommendation.confidence_score || 0) * 100)}% match
+                          {Math.round(
+                            (recommendation.confidence_score || 0) * 100
+                          )}
+                          % match
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="p-4">
                       <h3 className="font-medium text-gray-900 line-clamp-2 mb-2">
                         {recommendation.product.title}
                       </h3>
                       <p className="text-primary-600 font-semibold">
                         ${recommendation.product.price_min}
-                        {recommendation.product.price_max && recommendation.product.price_max !== recommendation.product.price_min && 
-                          ` - $${recommendation.product.price_max}`
-                        }
+                        {recommendation.product.price_max &&
+                          recommendation.product.price_max !==
+                            recommendation.product.price_min &&
+                          ` - $${recommendation.product.price_max}`}
                       </p>
                       <p className="text-xs text-gray-500 mt-2">
                         {recommendation.product.brand}
@@ -420,7 +445,9 @@ export default function DashboardPage() {
               className="mb-8"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Recent Gift Links</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Recent Gift Links
+                </h2>
                 <Link
                   href="/dashboard/gift-links"
                   className="text-primary-600 hover:text-primary-500 text-sm font-medium"
@@ -452,7 +479,7 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <Gift className="w-4 h-4" />
@@ -476,25 +503,36 @@ export default function DashboardPage() {
             transition={{ delay: 0.5 }}
             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Activity Summary</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Activity Summary
+            </h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Favorite Categories */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-4">Favorite Categories</h3>
+                <h3 className="font-medium text-gray-900 mb-4">
+                  Favorite Categories
+                </h3>
                 {statistics?.favorite_categories?.length > 0 ? (
                   <div className="space-y-3">
-                    {statistics.favorite_categories.slice(0, 5).map((category: string, index: number) => (
-                      <div key={category} className="flex items-center justify-between">
-                        <span className="text-gray-700">{category}</span>
-                        <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-primary-500 h-2 rounded-full"
-                            style={{ width: `${Math.max(20, 100 - (index * 15))}%` }}
-                          />
+                    {statistics.favorite_categories
+                      .slice(0, 5)
+                      .map((category: string, index: number) => (
+                        <div
+                          key={category}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-gray-700">{category}</span>
+                          <div className="w-24 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-primary-500 h-2 rounded-full"
+                              style={{
+                                width: `${Math.max(20, 100 - index * 15)}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 ) : (
                   <p className="text-gray-500 text-sm">
@@ -505,13 +543,15 @@ export default function DashboardPage() {
 
               {/* Recent Activity */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-4">Recent Activity</h3>
+                <h3 className="font-medium text-gray-900 mb-4">
+                  Recent Activity
+                </h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-gray-600">Last active: </span>
                     <span className="text-gray-900">
-                      {user.last_login ? formatDate(user.last_login) : 'Today'}
+                      {user.last_login ? formatDate(user.last_login) : "Today"}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
