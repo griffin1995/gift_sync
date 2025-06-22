@@ -27,11 +27,12 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
   const [gestureStartTime, setGestureStartTime] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
   
-  // Motion values for drag tracking
+  // Motion values for drag tracking - enhanced for mobile
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-300, 300], [-30, 30]);
   const opacity = useTransform(x, [-300, -150, 0, 150, 300], [0, 1, 1, 1, 0]);
+  const scale = useTransform(x, [-150, 0, 150], [0.95, 1, 0.95]);
   
   // Transform values for overlay indicators
   const likeOpacity = useTransform(x, [0, 150], [0, 1]);
@@ -51,15 +52,30 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : 0;
 
-  // Handle pan start
+  // Handle pan start - enhanced for mobile
   const handlePanStart = () => {
     setIsDragging(true);
     setGestureStartTime(Date.now());
+    
+    // Haptic feedback on touch start (mobile)
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
+    
+    // Prevent scroll on mobile during drag
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+    }
   };
 
-  // Handle pan end
+  // Handle pan end - enhanced for mobile
   const handlePanEnd = (_event: any, info: PanInfo) => {
     setIsDragging(false);
+    
+    // Re-enable scroll
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'auto';
+    }
     
     const { offset, velocity } = info;
     const swipeThreshold = appConfig.swipe.distanceThreshold;
@@ -98,6 +114,19 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
 
     if (shouldSwipe) {
       gesture.direction = direction;
+      
+      // Enhanced haptic feedback for mobile
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        const vibrationPattern = {
+          'right': 50,  // Like - short pleasant buzz
+          'up': [30, 20, 30],  // Super like - double buzz
+          'left': 100,  // Dislike - longer buzz
+          'down': 75   // Down swipe
+        }[direction] || 50;
+        
+        navigator.vibrate(vibrationPattern);
+      }
+      
       onSwipe(direction, gesture);
     } else {
       // Snap back to center
@@ -194,12 +223,18 @@ export const SwipeCard: React.FC<SwipeCardProps> = ({
         y,
         rotate,
         opacity,
+        scale,
         zIndex: isActive ? 20 : 10 - index,
       }}
       drag={isActive}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={0.2}
-      whileDrag={{ scale: 1.05 }}
+      dragMomentum={true}
+      whileDrag={{ 
+        scale: 1.05,
+        cursor: 'grabbing',
+        transition: { type: 'spring', stiffness: 400, damping: 30 }
+      }}
       onPanStart={handlePanStart}
       onPanEnd={handlePanEnd}
       initial={{ scale: 0.9, opacity: 0 }}

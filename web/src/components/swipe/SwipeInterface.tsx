@@ -180,9 +180,16 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
         toast.success('New recommendations are ready!');
       }
 
-      // Provide haptic feedback (if supported)
-      if ('vibrate' in navigator) {
-        navigator.vibrate(direction === 'right' || direction === 'up' ? 50 : 100);
+      // Enhanced haptic feedback for mobile
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        const vibrationPattern = {
+          'right': 50,  // Like - short pleasant buzz
+          'up': [30, 20, 30],  // Super like - double buzz
+          'left': 100,  // Dislike - longer buzz
+          'down': 75   // Down swipe
+        }[direction] || 50;
+        
+        navigator.vibrate(vibrationPattern);
       }
 
     } catch (error) {
@@ -315,7 +322,7 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
   const progress = Math.min((swipeState.swipeCount / appConfig.swipe.maxSwipesPerSession) * 100, 100);
 
   return (
-    <div className={`relative w-full h-full flex flex-col ${className}`}>
+    <div className={`relative w-full h-full flex flex-col touch-none select-none ${className}`} style={{ touchAction: 'none' }}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border-b border-gray-200">
         <div className="flex items-center gap-3">
