@@ -5,9 +5,14 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
+import { PWAManager } from '@/components/pwa/PWAManager';
+import { useMobileOptimizations } from '@/hooks/useMobileOptimizations';
 import '@/styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
+  // Initialize mobile optimizations
+  const mobileOptimizations = useMobileOptimizations();
+
   useEffect(() => {
     // Add custom cursor for better UX
     document.body.style.cursor = 'default';
@@ -16,7 +21,20 @@ export default function App({ Component, pageProps }: AppProps) {
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
-  }, []);
+
+    // Mobile-specific optimizations
+    if (mobileOptimizations.isMobile) {
+      // Disable pull-to-refresh on mobile
+      document.body.style.overscrollBehavior = 'none';
+      
+      // Prevent text selection on mobile for better touch experience
+      document.body.style.webkitUserSelect = 'none';
+      document.body.style.userSelect = 'none';
+      
+      // Enable hardware acceleration
+      document.body.style.transform = 'translateZ(0)';
+    }
+  }, [mobileOptimizations.isMobile]);
 
   return (
     <PostHogProvider>
@@ -24,6 +42,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <AuthProvider>
           <AuthGuard>
             <Component {...pageProps} />
+            <PWAManager />
           </AuthGuard>
           <Toaster
           position="top-right"
