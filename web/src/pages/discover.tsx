@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EnhancedSwipeCard } from '@/components/swipe/EnhancedSwipeCard';
+import { SwipeInterface } from '@/components/swipe/SwipeInterface';
 import { LoadingCard, LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Gift, ArrowLeft, Settings, Info, Sparkles, Heart, Zap } from 'lucide-react';
 import { SwipeSession } from '@/types';

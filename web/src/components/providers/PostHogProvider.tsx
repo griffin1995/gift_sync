@@ -10,6 +10,12 @@ export function PostHogProvider({ children }: PostHogProviderProps) {
   const router = useRouter();
 
   useEffect(() => {
+    // Temporarily disable PostHog in production to avoid CORS issues
+    if (process.env.NODE_ENV === 'production') {
+      console.log('[PostHog Provider] Disabled in production to avoid CORS issues');
+      return;
+    }
+    
     // Initialize PostHog
     analytics.init();
 
