@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 import uuid
 
 from app.core.database import get_db
-from app.models.user import User
-from app.api.v1.endpoints.auth import get_current_user
+from app.models_sqlalchemy.user import User
+from app.api.v1.endpoints.auth import get_current_user, get_current_user_from_token
+from app.database import supabase
 
 router = APIRouter()
 
@@ -89,3 +91,67 @@ async def get_user_by_id(
         "subscription_tier": user.subscription_tier.value,
         "created_at": user.created_at.isoformat(),
     }
+
+
+@router.get("/me/statistics", summary="Get current user statistics")
+async def get_user_statistics(
+    authorization: str = Header(None)
+):
+    """Get comprehensive statistics for the authenticated user."""
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required"
+        )
+    
+    try:
+        # Get current user from token
+        current_user = await get_current_user_from_token(authorization)
+        
+        # Mock user statistics (in production, query from Supabase)
+        return {
+            "user_id": current_user["id"],
+            "swipe_stats": {
+                "total_swipes": 247,
+                "likes": 186,
+                "dislikes": 61,
+                "like_rate": 0.75,
+                "favorite_categories": ["Electronics", "Kitchen", "Books"],
+                "avg_swipes_per_session": 12.3
+            },
+            "recommendation_stats": {
+                "total_recommendations_received": 156,
+                "recommendations_clicked": 47,
+                "click_through_rate": 0.30,
+                "favorite_recommendation_types": ["trending", "personalized", "seasonal"]
+            },
+            "gift_link_stats": {
+                "links_created": 8,
+                "total_link_views": 142,
+                "total_link_clicks": 38,
+                "avg_conversion_rate": 0.27,
+                "most_shared_category": "Electronics"
+            },
+            "engagement_stats": {
+                "total_sessions": 23,
+                "avg_session_duration_minutes": 8.5,
+                "last_active": datetime.now().isoformat(),
+                "days_since_signup": 45,
+                "streak_days": 7
+            },
+            "preference_insights": {
+                "top_price_range": "£50-£150",
+                "preferred_occasions": ["birthday", "christmas", "anniversary"],
+                "discovery_method": "swipe_based",
+                "personalization_score": 0.82
+            },
+            "achievements": [
+                {"id": "first_swipe", "name": "First Swipe", "unlocked": True},
+                {"id": "discovery_expert", "name": "Discovery Expert", "unlocked": True},
+                {"id": "gift_curator", "name": "Gift Curator", "unlocked": False}
+            ],
+            "last_updated": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get user statistics: {str(e)}")

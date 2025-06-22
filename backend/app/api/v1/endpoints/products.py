@@ -5,8 +5,8 @@ from typing import List, Optional
 import uuid
 
 from app.core.database import get_db
-from app.models.user import User
-from app.models.product import Product, Category, Brand, Retailer
+from app.models_sqlalchemy.user import User
+from app.models_sqlalchemy.product import Product, Category, Brand, Retailer
 from app.api.v1.endpoints.auth import get_current_user
 
 router = APIRouter()

@@ -59,6 +59,7 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
       const response = await api.createSwipeSession(sessionData);
       const newSession = response.data;
 
+
       setSession(newSession);
       setSwipeState(prev => ({
         ...prev,
@@ -117,7 +118,7 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
 
   // Handle swipe action
   const handleSwipe = useCallback(async (direction: 'left' | 'right' | 'up' | 'down', gesture: SwipeGesture) => {
-    if (!session || swipeState.currentIndex >= swipeState.cards.length) {
+    if (!session?.id || !swipeState.sessionId || swipeState.currentIndex >= swipeState.cards.length) {
       return;
     }
 
@@ -321,6 +322,8 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
   const nextCards = swipeState.cards.slice(swipeState.currentIndex + 1, swipeState.currentIndex + 4);
   const progress = Math.min((swipeState.swipeCount / appConfig.swipe.maxSwipesPerSession) * 100, 100);
 
+
+
   return (
     <div className={`relative w-full h-full flex flex-col touch-none select-none ${className}`} style={{ touchAction: 'none' }}>
       {/* Header */}
@@ -376,10 +379,14 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
 
       {/* Swipe Area */}
       <div className="flex-1 relative overflow-hidden bg-gradient-to-br from-primary-50 to-secondary-50">
+
         {swipeState.isLoading && swipeState.cards.length === 0 ? (
           // Loading state
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-yellow-200 border-4 border-purple-500">
             <div className="text-center">
+              <h1 className="text-black text-2xl">DEBUG: LOADING STATE</h1>
+              <p className="text-black">isLoading: {swipeState.isLoading.toString()}</p>
+              <p className="text-black">cards.length: {swipeState.cards.length}</p>
               <motion.div
                 className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto"
                 animate={{ rotate: 360 }}
@@ -391,20 +398,17 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
         ) : currentCard ? (
           // Swipe cards
           <div className="absolute inset-4">
-            {/* Background cards */}
-            {nextCards.map((card, index) => (
-              <SwipeCard
-                key={card.id}
-                product={card.product}
-                index={index + 1}
-                isActive={false}
-                onSwipe={() => {}}
-                onProductClick={handleProductClick}
-                className="pointer-events-none"
-              />
-            ))}
-
-            {/* Active card */}
+            {/* DEBUG: Simple visible test */}
+            <div className="absolute inset-0 bg-blue-200 border-4 border-red-500 z-50 p-4">
+              <h1 className="text-black text-2xl">DEBUG: SwipeInterface Rendering</h1>
+              <p className="text-black">Current card exists: {currentCard ? 'YES' : 'NO'}</p>
+              <p className="text-black">Product title: {currentCard?.product?.title || currentCard?.product?.name || 'NO TITLE'}</p>
+              <p className="text-black">Product ID: {currentCard?.product?.id || 'NO ID'}</p>
+              <p className="text-black">Cards length: {swipeState.cards.length}</p>
+              <pre className="text-black text-xs mt-2">{JSON.stringify(currentCard?.product, null, 2)}</pre>
+            </div>
+            
+            {/* Current Card */}
             <SwipeCard
               key={currentCard.id}
               product={currentCard.product}
@@ -412,12 +416,31 @@ export const SwipeInterface: React.FC<SwipeInterfaceProps> = ({
               isActive={true}
               onSwipe={handleSwipe}
               onProductClick={handleProductClick}
+              className="z-30"
             />
+            
+            {/* Next Cards (background stack) */}
+            {nextCards.map((card, index) => (
+              <SwipeCard
+                key={card.id}
+                product={card.product}
+                index={index + 1}
+                isActive={false}
+                onSwipe={handleSwipe}
+                onProductClick={handleProductClick}
+                className={`z-${20 - index}`}
+              />
+            ))}
           </div>
         ) : (
           // No more cards
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-green-200 border-4 border-orange-500">
             <div className="text-center max-w-md">
+              <h1 className="text-black text-2xl">DEBUG: NO MORE CARDS</h1>
+              <p className="text-black">isLoading: {swipeState.isLoading.toString()}</p>
+              <p className="text-black">cards.length: {swipeState.cards.length}</p>
+              <p className="text-black">currentIndex: {swipeState.currentIndex}</p>
+              <p className="text-black">hasMore: {swipeState.hasMore.toString()}</p>
               <Zap className="w-16 h-16 text-primary-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 Session Complete!

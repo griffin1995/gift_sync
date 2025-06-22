@@ -38,8 +38,8 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up GiftSync API", version=settings.VERSION)
     
-    # Initialize database
-    await create_tables()
+    # Skip database table creation for Supabase
+    # await create_tables()
     
     # Initialize ML models
     # await initialize_ml_models()

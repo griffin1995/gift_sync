@@ -10,6 +10,8 @@ from typing import Optional
 
 from app.core.config import settings
 from app.database import supabase
+from app.core.database import get_db
+from app.models_sqlalchemy.user import User
 
 router = APIRouter()
 
@@ -321,4 +323,62 @@ async def get_current_user_from_token(authorization: str) -> dict:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
+        )
+
+
+# Additional function to get current user as SQLAlchemy model (for complex endpoints)
+async def get_current_user(
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db)
+) -> User:
+    """Get current user as SQLAlchemy User model from JWT token."""
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required"
+        )
+    
+    try:
+        # Extract token from "Bearer <token>" format
+        if not authorization.startswith("Bearer "):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authorization header format"
+            )
+        
+        token = authorization.split(" ")[1]
+        
+        # Decode JWT token
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        user_id = payload.get("user_id")
+        
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload"
+            )
+        
+        # Get user from database using SQLAlchemy
+        from sqlalchemy import select
+        stmt = select(User).where(User.id == user_id, User.is_active == True)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+        
+        return user
+        
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Authentication error: {str(e)}"
         )

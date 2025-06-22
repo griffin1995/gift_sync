@@ -28,8 +28,11 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str = "postgresql://giftsync:giftsync_dev_password@localhost:5432/giftsync_dev"
-    DATABASE_POOL_SIZE: int = 20
-    DATABASE_MAX_OVERFLOW: int = 30
+    DATABASE_POOL_SIZE: int = 10
+    DATABASE_MAX_OVERFLOW: int = 20
+    
+    # Registration
+    ENABLE_REGISTRATION: bool = True
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379"

@@ -1,343 +1,239 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy import select, func, desc, and_
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from fastapi import APIRouter, HTTPException, status, Query, Header
 from typing import List, Optional
 from datetime import datetime, timedelta
 import uuid
+from pydantic import BaseModel
 
-from app.core.database import get_db
-from app.models.user import User
-from app.models.product import Product
-from app.models.recommendation import (
-    Recommendation, RecommendationInteraction, RecommendationType, 
-    RecommendationStatus, InteractionType, RecommendationAnalytics
-)
-from app.api.v1.endpoints.auth import get_current_user
+from app.database import supabase
+from app.api.v1.endpoints.auth import get_current_user_from_token
 
 router = APIRouter()
 
+class ProductData(BaseModel):
+    id: str
+    title: str
+    description: str
+    price: float
+    price_min: float
+    price_max: float
+    currency: str
+    brand: str
+    category: str
+    image_url: Optional[str] = None
+    affiliate_url: Optional[str] = None
 
-@router.get("/", summary="Get personalized recommendations")
+class RecommendationResponse(BaseModel):
+    id: str
+    user_id: str
+    product_id: str
+    product: ProductData
+    recommendation_type: str
+    confidence_score: float
+    reason: str
+    occasion: Optional[str] = None
+    created_at: str
+
+class RecommendationInteractionRequest(BaseModel):
+    recommendation_id: str
+    interaction_type: str  # 'view', 'like', 'dislike', 'share', 'click'
+
+@router.get("/", response_model=List[RecommendationResponse], summary="Get personalized recommendations")
 async def get_recommendations(
     limit: int = Query(20, le=50, description="Number of recommendations to return"),
     offset: int = Query(0, description="Number of recommendations to skip"),
     recommendation_type: Optional[str] = Query(None, description="Filter by recommendation type"),
     occasion: Optional[str] = Query(None, description="Filter by occasion"),
     price_range: Optional[str] = Query(None, description="Filter by price range"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    authorization: str = Header(None)
 ):
     """Get personalized recommendations for the authenticated user."""
-    
-    # Build query for active recommendations
-    stmt = (
-        select(Recommendation)
-        .where(
-            Recommendation.user_id == current_user.id,
-            Recommendation.status == RecommendationStatus.ACTIVE
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required"
         )
-        .options(
-            selectinload(Recommendation.product),
-            selectinload(Recommendation.interactions)
-        )
-    )
     
-    # Apply filters
-    if recommendation_type:
-        try:
-            rec_type = RecommendationType(recommendation_type)
-            stmt = stmt.where(Recommendation.recommendation_type == rec_type)
-        except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid recommendation type"
-            )
-    
-    if occasion:
-        stmt = stmt.where(Recommendation.occasion == occasion)
-    
-    if price_range:
-        stmt = stmt.where(Recommendation.price_range == price_range)
-    
-    # Order by confidence score and display priority
-    stmt = stmt.order_by(
-        desc(Recommendation.display_priority),
-        desc(Recommendation.confidence_score),
-        desc(Recommendation.created_at)
-    )
-    
-    # Apply pagination
-    stmt = stmt.limit(limit).offset(offset)
-    
-    result = await db.execute(stmt)
-    recommendations = result.scalars().all()
-    
-    # Mark recommendations as served
-    for rec in recommendations:
-        rec.served_at = datetime.utcnow()
-    await db.commit()
-    
-    # Return enriched recommendations with product data
-    return [
-        {
-            **rec.to_dict(),
-            "product": rec.product.to_dict() if rec.product else None,
-            "interaction_count": len(rec.interactions),
-        }
-        for rec in recommendations
-    ]
-
-
-@router.get("/generate", summary="Generate new recommendations")
-async def generate_recommendations(
-    force_refresh: bool = Query(False, description="Force regeneration of recommendations"),
-    session_id: Optional[str] = Query(None, description="Swipe session ID to base recommendations on"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Generate new personalized recommendations for the user."""
-    
-    # Check if user has recent recommendations and force_refresh is False
-    if not force_refresh:
-        recent_cutoff = datetime.utcnow() - timedelta(hours=24)
-        stmt = select(func.count(Recommendation.id)).where(
-            Recommendation.user_id == current_user.id,
-            Recommendation.status == RecommendationStatus.ACTIVE,
-            Recommendation.created_at > recent_cutoff
-        )
-        result = await db.execute(stmt)
-        recent_count = result.scalar()
+    try:
+        # Get current user from token
+        current_user = await get_current_user_from_token(authorization)
         
-        if recent_count > 0:
-            return {
-                "message": "Recent recommendations exist. Use force_refresh=true to regenerate.",
-                "recent_count": recent_count
+        # For now, return mock recommendations data
+        # In production, this would query Supabase recommendations table
+        mock_recommendations = [
+            {
+                "id": "rec_1",
+                "user_id": current_user["id"],
+                "product_id": "1",
+                "product": {
+                    "id": "1",
+                    "title": "Wireless Headphones",
+                    "description": "High-quality wireless headphones with noise cancellation",
+                    "price": 199.99,
+                    "price_min": 199.99,
+                    "price_max": 199.99,
+                    "currency": "GBP",
+                    "brand": "AudioTech",
+                    "category": "Electronics",
+                    "image_url": "https://picsum.photos/400/300?random=1",
+                    "affiliate_url": "https://amazon.co.uk/headphones"
+                },
+                "recommendation_type": "trending",
+                "confidence_score": 0.92,
+                "reason": "Based on your interest in electronics and high ratings",
+                "occasion": "everyday",
+                "created_at": datetime.now().isoformat()
+            },
+            {
+                "id": "rec_2",
+                "user_id": current_user["id"],
+                "product_id": "2",
+                "product": {
+                    "id": "2",
+                    "title": "Coffee Maker",
+                    "description": "Premium coffee maker for the perfect brew",
+                    "price": 149.99,
+                    "price_min": 149.99,
+                    "price_max": 149.99,
+                    "currency": "GBP",
+                    "brand": "BrewMaster",
+                    "category": "Kitchen",
+                    "image_url": "https://picsum.photos/400/300?random=2",
+                    "affiliate_url": "https://amazon.co.uk/coffee-maker"
+                },
+                "recommendation_type": "personalized",
+                "confidence_score": 0.87,
+                "reason": "Popular choice for coffee enthusiasts",
+                "occasion": "morning_routine",
+                "created_at": datetime.now().isoformat()
+            },
+            {
+                "id": "rec_3",
+                "user_id": current_user["id"],
+                "product_id": "3",
+                "product": {
+                    "id": "3",
+                    "title": "Smart Watch",
+                    "description": "Feature-rich smartwatch with health tracking",
+                    "price": 299.99,
+                    "price_min": 249.99,
+                    "price_max": 349.99,
+                    "currency": "GBP",
+                    "brand": "TechWear",
+                    "category": "Electronics",
+                    "image_url": "https://picsum.photos/400/300?random=3",
+                    "affiliate_url": "https://amazon.co.uk/smartwatch"
+                },
+                "recommendation_type": "trending",
+                "confidence_score": 0.95,
+                "reason": "Trending in wearable technology",
+                "occasion": "fitness",
+                "created_at": datetime.now().isoformat()
             }
-    
-    # TODO: Integrate with ML pipeline to generate actual recommendations
-    # For now, this is a placeholder that would call the ML service
-    
-    # This would typically:
-    # 1. Fetch user's swipe history and preferences
-    # 2. Call the ML recommendation service
-    # 3. Store the generated recommendations in the database
-    # 4. Return the new recommendations
-    
-    # Placeholder response
-    return {
-        "message": "Recommendation generation triggered",
-        "user_id": str(current_user.id),
-        "session_id": session_id,
-        "status": "pending",
-        "estimated_completion": "30 seconds"
-    }
+        ]
+        
+        # Apply filters
+        filtered_recommendations = mock_recommendations
+        
+        if recommendation_type:
+            filtered_recommendations = [r for r in filtered_recommendations 
+                                      if r["recommendation_type"] == recommendation_type]
+        
+        if occasion:
+            filtered_recommendations = [r for r in filtered_recommendations 
+                                      if r["occasion"] == occasion]
+        
+        # Apply pagination
+        start = offset
+        end = offset + limit
+        paginated_recommendations = filtered_recommendations[start:end]
+        
+        return paginated_recommendations
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get recommendations: {str(e)}")
 
-
-@router.post("/{recommendation_id}/interact", summary="Record recommendation interaction")
+@router.post("/interactions", summary="Record recommendation interaction")
 async def record_recommendation_interaction(
-    recommendation_id: str,
-    interaction_data: dict,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    interaction: RecommendationInteractionRequest,
+    authorization: str = Header(None)
 ):
-    """Record a user interaction with a recommendation."""
+    """Record user interaction with a recommendation."""
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required"
+        )
     
     try:
-        rec_uuid = uuid.UUID(recommendation_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid recommendation ID format"
-        )
-    
-    # Verify recommendation exists and belongs to user
-    stmt = select(Recommendation).where(
-        Recommendation.id == rec_uuid,
-        Recommendation.user_id == current_user.id
-    )
-    result = await db.execute(stmt)
-    recommendation = result.scalar_one_or_none()
-    
-    if not recommendation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recommendation not found"
-        )
-    
-    # Validate interaction type
-    try:
-        interaction_type = InteractionType(interaction_data['interaction_type'])
-    except (KeyError, ValueError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or missing interaction type"
-        )
-    
-    # Create interaction record
-    interaction = RecommendationInteraction(
-        recommendation_id=recommendation.id,
-        user_id=current_user.id,
-        interaction_type=interaction_type,
-        session_id=interaction_data.get('session_id'),
-        device_type=interaction_data.get('device_type'),
-        platform=interaction_data.get('platform'),
-        time_to_interaction=interaction_data.get('time_to_interaction'),
-        interaction_duration=interaction_data.get('interaction_duration'),
-        purchase_amount=interaction_data.get('purchase_amount'),
-        commission_amount=interaction_data.get('commission_amount'),
-        order_id=interaction_data.get('order_id'),
-        page_position=interaction_data.get('page_position'),
-        referrer=interaction_data.get('referrer'),
-        metadata=interaction_data.get('metadata'),
-    )
-    
-    db.add(interaction)
-    
-    # Update recommendation status based on interaction
-    if interaction_type == InteractionType.PURCHASE:
-        recommendation.status = RecommendationStatus.PURCHASED
-    elif interaction_type == InteractionType.DISMISS:
-        recommendation.status = RecommendationStatus.DISMISSED
-    
-    await db.commit()
-    await db.refresh(interaction)
-    
-    return interaction.to_dict()
-
-
-@router.get("/{recommendation_id}", summary="Get specific recommendation")
-async def get_recommendation(
-    recommendation_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Get a specific recommendation with full details."""
-    
-    try:
-        rec_uuid = uuid.UUID(recommendation_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid recommendation ID format"
-        )
-    
-    stmt = (
-        select(Recommendation)
-        .where(
-            Recommendation.id == rec_uuid,
-            Recommendation.user_id == current_user.id
-        )
-        .options(
-            selectinload(Recommendation.product),
-            selectinload(Recommendation.interactions)
-        )
-    )
-    
-    result = await db.execute(stmt)
-    recommendation = result.scalar_one_or_none()
-    
-    if not recommendation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recommendation not found"
-        )
-    
-    return {
-        **recommendation.to_dict(),
-        "product": recommendation.product.to_dict() if recommendation.product else None,
-        "interactions": [interaction.to_dict() for interaction in recommendation.interactions],
-    }
-
-
-@router.get("/analytics/performance", summary="Get recommendation performance analytics")
-async def get_recommendation_analytics(
-    days: int = Query(30, description="Number of days to analyse"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Get analytics about recommendation performance for the user."""
-    
-    # Get recommendations from the specified time period
-    cutoff_date = datetime.utcnow() - timedelta(days=days)
-    stmt = (
-        select(Recommendation)
-        .where(
-            Recommendation.user_id == current_user.id,
-            Recommendation.created_at >= cutoff_date
-        )
-        .options(
-            selectinload(Recommendation.product),
-            selectinload(Recommendation.interactions)
-        )
-    )
-    
-    result = await db.execute(stmt)
-    recommendations = result.scalars().all()
-    
-    if not recommendations:
+        # Get current user from token
+        current_user = await get_current_user_from_token(authorization)
+        
+        # Record interaction (mock for now)
+        interaction_id = f"int_{datetime.now().timestamp()}"
+        
         return {
-            "message": "No recommendations found for the specified period",
-            "days": days
+            "interaction_id": interaction_id,
+            "recommendation_id": interaction.recommendation_id,
+            "interaction_type": interaction.interaction_type,
+            "user_id": current_user["id"],
+            "timestamp": datetime.now().isoformat(),
+            "status": "recorded"
         }
-    
-    # Calculate performance metrics
-    performance_metrics = RecommendationAnalytics.calculate_performance_metrics(recommendations)
-    
-    # Get top performing categories
-    top_categories = RecommendationAnalytics.get_top_performing_categories(recommendations)
-    
-    return {
-        "period_days": days,
-        "performance_metrics": performance_metrics,
-        "top_categories": top_categories,
-        "recommendation_types": {
-            rec_type.value: len([r for r in recommendations if r.recommendation_type == rec_type])
-            for rec_type in RecommendationType
-        }
-    }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to record interaction: {str(e)}")
 
-
-@router.delete("/{recommendation_id}", summary="Dismiss recommendation")
-async def dismiss_recommendation(
-    recommendation_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+@router.get("/analytics", summary="Get recommendation analytics")
+async def get_recommendation_analytics(
+    authorization: str = Header(None)
 ):
-    """Dismiss a recommendation (mark as not interested)."""
+    """Get recommendation analytics for the authenticated user."""
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required"
+        )
     
     try:
-        rec_uuid = uuid.UUID(recommendation_id)
-    except ValueError:
+        # Get current user from token
+        current_user = await get_current_user_from_token(authorization)
+        
+        # Return mock analytics data
+        return {
+            "user_id": current_user["id"],
+            "total_recommendations": 150,
+            "total_interactions": 45,
+            "interaction_rate": 0.30,
+            "favorite_categories": ["Electronics", "Kitchen", "Fitness"],
+            "avg_confidence_score": 0.88,
+            "last_updated": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get analytics: {str(e)}")
+
+@router.post("/refresh", summary="Refresh user recommendations")
+async def refresh_recommendations(
+    authorization: str = Header(None)
+):
+    """Trigger a refresh of user recommendations."""
+    if not authorization:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid recommendation ID format"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required"
         )
     
-    stmt = select(Recommendation).where(
-        Recommendation.id == rec_uuid,
-        Recommendation.user_id == current_user.id
-    )
-    result = await db.execute(stmt)
-    recommendation = result.scalar_one_or_none()
-    
-    if not recommendation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recommendation not found"
-        )
-    
-    # Update status to dismissed
-    recommendation.status = RecommendationStatus.DISMISSED
-    
-    # Create dismiss interaction
-    dismiss_interaction = RecommendationInteraction(
-        recommendation_id=recommendation.id,
-        user_id=current_user.id,
-        interaction_type=InteractionType.DISMISS,
-    )
-    
-    db.add(dismiss_interaction)
-    await db.commit()
-    
-    return {"message": "Recommendation dismissed successfully"}
+    try:
+        # Get current user from token
+        current_user = await get_current_user_from_token(authorization)
+        
+        # Trigger recommendation refresh (mock for now)
+        return {
+            "user_id": current_user["id"],
+            "refresh_triggered": True,
+            "estimated_completion": (datetime.now() + timedelta(minutes=5)).isoformat(),
+            "status": "processing"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to refresh recommendations: {str(e)}")

@@ -7,8 +7,8 @@ from datetime import datetime
 import uuid
 
 from app.core.database import get_db
-from app.models.user import User
-from app.models.swipe import SwipeSession, SwipeInteraction, SwipeDirection, SwipeAnalytics
+from app.models_sqlalchemy.user import User
+from app.models_sqlalchemy.swipe import SwipeSession, SwipeInteraction, SwipeDirection, SwipeAnalytics
 from app.api.v1.endpoints.auth import get_current_user
 
 router = APIRouter()

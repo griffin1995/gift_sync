@@ -14,15 +14,43 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: [
-      'localhost',
-      'images.unsplash.com',
-      'images.pexels.com',
-      's3.amazonaws.com',
-      'giftsync-prod-assets.s3.amazonaws.com',
-      'giftsync-dev-assets.s3.amazonaws.com',
-      'm.media-amazon.com',
-      'images-na.ssl-images-amazon.com'
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'giftsync-prod-assets.s3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'giftsync-dev-assets.s3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images-na.ssl-images-amazon.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      }
     ],
     formats: ['image/webp', 'image/avif'],
   },
@@ -111,7 +139,7 @@ const nextConfig = {
       return [
         {
           source: '/api/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`
+          destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`
         }
       ];
     }

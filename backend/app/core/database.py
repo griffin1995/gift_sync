@@ -51,7 +51,7 @@ async def create_tables():
     try:
         async with engine.begin() as conn:
             # Import all models to ensure they're registered
-            from app.models import user, product, recommendation, swipe, gift_link, affiliate  # noqa
+            from app.models_sqlalchemy import user, product, recommendation, swipe, gift_link, affiliate  # noqa
             
             await conn.run_sync(Base.metadata.create_all)
             logger.info("Database tables created successfully")

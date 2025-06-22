@@ -242,7 +242,11 @@ class ApiClient {
 
   // Generic request methods
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.client.get(url, config);
+    const response: AxiosResponse<any> = await this.client.get(url, config);
+    // Handle direct response from backend (not wrapped in ApiResponse)
+    if (response.data && !response.data.hasOwnProperty('data')) {
+      return { data: response.data, success: true };
+    }
     return response.data;
   }
 
@@ -327,7 +331,7 @@ class ApiClient {
   }
 
   // Product methods
-  async getProducts(params?: any): Promise<PaginatedResponse<Product>> {
+  async getProducts(params?: any): Promise<ApiResponse<Product[]>> {
     return this.get<Product[]>(endpoints.products.list, { params });
   }
 

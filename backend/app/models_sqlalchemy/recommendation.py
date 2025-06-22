@@ -151,7 +151,7 @@ class RecommendationInteraction(Base):
     referrer = Column(String(255), nullable=True)   # How they got to the recommendation
     
     # Additional data
-    metadata = Column(String, nullable=True)  # JSON string for extra context
+    additional_metadata = Column(String, nullable=True)  # JSON string for extra context
     
     # Timestamps
     created_at = Column(DateTime, server_default=func.now(), nullable=False)

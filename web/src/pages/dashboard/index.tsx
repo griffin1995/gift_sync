@@ -420,11 +420,11 @@ export default function DashboardPage() {
                         {recommendation.product.title}
                       </h3>
                       <p className="text-primary-600 font-semibold">
-                        ${recommendation.product.price_min}
+                        £{recommendation.product.price_min}
                         {recommendation.product.price_max &&
                           recommendation.product.price_max !==
                             recommendation.product.price_min &&
-                          ` - $${recommendation.product.price_max}`}
+                          ` - £${recommendation.product.price_max}`}
                       </p>
                       <p className="text-xs text-gray-500 mt-2">
                         {recommendation.product.brand}

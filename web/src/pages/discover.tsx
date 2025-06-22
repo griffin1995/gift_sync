@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EnhancedSwipeCard } from '@/components/swipe/EnhancedSwipeCard';
 import { SwipeInterface } from '@/components/swipe/SwipeInterface';
+import { SimpleSwipeInterface } from '@/components/swipe/SimpleSwipeInterface';
+import { WorkingSwipeInterface } from '@/components/swipe/WorkingSwipeInterface';
 import { LoadingCard, LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Gift, ArrowLeft, Settings, Info, Sparkles, Heart, Zap } from 'lucide-react';
 import { SwipeSession } from '@/types';
@@ -326,7 +328,7 @@ export default function DiscoverPage() {
 
           {/* Swipe Interface */}
           <div className="flex-1">
-            <SwipeInterface
+            <WorkingSwipeInterface
               sessionType="discovery"
               onSessionComplete={handleSessionComplete}
               onRecommendationsReady={handleRecommendationsReady}

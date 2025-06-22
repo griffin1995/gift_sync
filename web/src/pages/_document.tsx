@@ -8,11 +8,8 @@ export default function Document() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* Favicon - using data URI for development */}
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎁</text></svg>" />
         <link rel="manifest" href="/manifest.json" />
         
         {/* Meta tags for PWA */}
@@ -29,7 +26,6 @@ export default function Document() {
         />
         
         {/* Preload critical resources */}
-        <link rel="preload" href="/images/hero-bg.webp" as="image" type="image/webp" />
         
         {/* Analytics placeholder */}
         {process.env.NODE_ENV === 'production' && (
