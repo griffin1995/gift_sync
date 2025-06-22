@@ -7,6 +7,7 @@ import { LoadingCard, LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Gift, ArrowLeft, Settings, Info, Sparkles, Heart, Zap } from 'lucide-react';
 import { SwipeSession } from '@/types';
 import { tokenManager } from '@/lib/api';
+import { useMobileOptimizations, useHapticFeedback } from '@/hooks/useMobileOptimizations';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -77,6 +78,10 @@ export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [swipeCount, setSwipeCount] = useState(0);
+  
+  // Mobile optimizations
+  const mobileOptimizations = useMobileOptimizations();
+  const haptics = useHapticFeedback();
 
   // Check authentication status
   useEffect(() => {
@@ -95,6 +100,17 @@ export default function DiscoverPage() {
   const handleSwipe = (direction: 'left' | 'right' | 'up') => {
     const currentProduct = currentProducts[currentIndex];
     setSwipeCount(prev => prev + 1);
+    
+    // Enhanced haptic feedback for mobile
+    if (mobileOptimizations.isMobile) {
+      if (direction === 'right') {
+        haptics.mediumTap();
+      } else if (direction === 'up') {
+        haptics.doubleTap();
+      } else {
+        haptics.lightTap();
+      }
+    }
     
     // Show feedback based on swipe direction
     if (direction === 'right') {
