@@ -131,13 +131,13 @@ export default function HomePage() {
         <title>GiftSync - AI-Powered Gift Recommendations</title>
         <meta
           name="description"
-          content="Discover perfect gifts with AI. Swipe through products, get personalized recommendations, and create shareable gift links. Make gift-giving effortless with GiftSync."
+          content="Discover perfect gifts with AI. Swipe through products, get personalised recommendations, and create shareable gift links. Make gift-giving effortless with GiftSync."
         />
-        <meta name="keywords" content="gifts, AI recommendations, gift ideas, personalized gifts, gift finder" />
+        <meta name="keywords" content="gifts, AI recommendations, gift ideas, personalised gifts, gift finder" />
         <meta property="og:title" content="GiftSync - AI-Powered Gift Recommendations" />
         <meta
           property="og:description"
-          content="Discover perfect gifts with AI. Swipe through products, get personalized recommendations, and create shareable gift links."
+          content="Discover perfect gifts with AI. Swipe through products, get personalised recommendations, and create shareable gift links."
         />
         <meta property="og:image" content="/images/og-image.jpg" />
         <meta property="og:url" content="https://giftsync.com" />
@@ -243,7 +243,7 @@ export default function HomePage() {
               </h1>
               
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Swipe through products, train our AI to understand your taste, and get personalized 
+                Swipe through products, train our AI to understand your taste, and get personalised 
                 gift recommendations that actually make sense. No more guessing, no more gift fails.
               </p>
 
@@ -399,7 +399,7 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Get personalized gift recommendations in three simple steps
+              Get personalised gift recommendations in three simple steps
             </p>
           </motion.div>
 
@@ -420,7 +420,7 @@ export default function HomePage() {
               {
                 step: '03',
                 title: 'Get Perfect Matches',
-                description: 'Receive personalized recommendations and create shareable gift links for any occasion.',
+                description: 'Receive personalised recommendations and create shareable gift links for any occasion.',
                 icon: <Gift className="w-8 h-8" />,
               },
             ].map((step, index) => (

@@ -200,8 +200,8 @@ export default function RecommendationsPage() {
     }).format(price);
   };
 
-  // Get confidence color
-  const getConfidenceColor = (confidence: number) => {
+  // Get confidence colour
+  const getConfidenceColour = (confidence: number) => {
     if (confidence >= 0.8) return 'text-green-600 bg-green-100';
     if (confidence >= 0.6) return 'text-yellow-600 bg-yellow-100';
     return 'text-gray-600 bg-gray-100';
@@ -422,7 +422,7 @@ export default function RecommendationsPage() {
                       
                       {/* Match Score Badge */}
                       <div className="absolute top-3 left-3">
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getConfidenceColor(recommendation.confidence)}`}>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getConfidenceColour(recommendation.confidence)}`}>
                           <Star className="w-3 h-3 fill-current" />
                           {Math.round(recommendation.score * 100)}% match
                         </div>
@@ -572,7 +572,7 @@ export default function RecommendationsPage() {
                     <div className="text-2xl font-bold text-primary-600">
                       {formatPrice(selectedRecommendation.product.price, selectedRecommendation.product.currency)}
                     </div>
-                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${getConfidenceColor(selectedRecommendation.confidence)}`}>
+                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${getConfidenceColour(selectedRecommendation.confidence)}`}>
                       <Star className="w-4 h-4 fill-current" />
                       {Math.round(selectedRecommendation.score * 100)}% match
                     </div>
