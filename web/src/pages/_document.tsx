@@ -72,8 +72,8 @@ export default function Document() {
         <Main />
         <NextScript />
         
-        {/* Service Worker Registration */}
-        {process.env.NODE_ENV === 'production' && (
+        {/* Enhanced Service Worker Registration */}
+        {typeof window !== 'undefined' && (
           <script
             dangerouslySetInnerHTML={{
               __html: `
@@ -82,10 +82,51 @@ export default function Document() {
                     navigator.serviceWorker.register('/sw.js')
                       .then(function(registration) {
                         console.log('SW registered: ', registration);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', function() {
+                          const newWorker = registration.installing;
+                          if (newWorker) {
+                            newWorker.addEventListener('statechange', function() {
+                              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // Show update available notification
+                                if (window.confirm('A new version is available. Refresh to update?')) {
+                                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                  window.location.reload();
+                                }
+                              }
+                            });
+                          }
+                        });
                       })
                       .catch(function(registrationError) {
                         console.log('SW registration failed: ', registrationError);
                       });
+                      
+                    // Listen for service worker messages
+                    navigator.serviceWorker.addEventListener('message', function(event) {
+                      if (event.data && event.data.type === 'navigate') {
+                        window.location.href = event.data.url;
+                      }
+                    });
+                  });
+                  
+                  // Listen for service worker updates
+                  navigator.serviceWorker.addEventListener('controllerchange', function() {
+                    window.location.reload();
+                  });
+                }
+                
+                // Preload critical routes for better performance
+                if ('requestIdleCallback' in window) {
+                  requestIdleCallback(function() {
+                    const criticalRoutes = ['/discover', '/dashboard', '/auth/login'];
+                    criticalRoutes.forEach(function(route) {
+                      const link = document.createElement('link');
+                      link.rel = 'prefetch';
+                      link.href = route;
+                      document.head.appendChild(link);
+                    });
                   });
                 }
               `,
