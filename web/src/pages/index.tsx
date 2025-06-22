@@ -773,25 +773,22 @@ export default function HomePage() {
           {/* Bottom Bar */}
           <div className="border-t border-slate-700/50">
             <div className="max-w-7xl mx-auto px-6 py-8 lg:px-8">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex flex-col md:flex-row items-center gap-6 text-slate-400 text-sm">
-                  <span>&copy; 2025 GiftSync. All rights reserved.</span>
-                  <div className="flex items-center gap-1 text-xs">
-                    <span>🇬🇧</span>
-                    <span>Made in the UK</span>
-                  </div>
+              <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400">
+                <span>&copy; 2025 GiftSync. All rights reserved.</span>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <span>🇬🇧</span>
+                  <span>Made in the UK</span>
                 </div>
-                
-                <div className="flex flex-col md:flex-row items-center gap-4 text-xs text-slate-500">
-                  <Link 
-                    href="/affiliate-disclosure" 
-                    className="hover:text-slate-400 transition-colors"
-                  >
-                    Amazon Associate Programme
-                  </Link>
-                  <span className="hidden md:block">•</span>
-                  <span>GDPR Compliant</span>
-                </div>
+                <span>•</span>
+                <Link 
+                  href="/affiliate-disclosure" 
+                  className="hover:text-slate-300 transition-colors"
+                >
+                  Amazon Associate Programme
+                </Link>
+                <span>•</span>
+                <span>GDPR Compliant</span>
               </div>
             </div>
           </div>
