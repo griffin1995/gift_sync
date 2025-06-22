@@ -63,7 +63,7 @@ export default function NotificationsPage() {
     }
   };
 
-  const getNotificationTypeColour = (type: Notification['type']) => {
+  const getNotificationTypeColor = (type: Notification['type']) => {
     switch (type) {
       case 'success':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
@@ -232,7 +232,7 @@ export default function NotificationsPage() {
                               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                 {notification.title}
                               </h3>
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getNotificationTypeColour(notification.type)}`}>
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getNotificationTypeColor(notification.type)}`}>
                                 {notification.type}
                               </span>
                               {!notification.read && (
