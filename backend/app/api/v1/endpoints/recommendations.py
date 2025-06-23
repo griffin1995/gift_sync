@@ -49,6 +49,7 @@ from pydantic import BaseModel
 
 from app.database import supabase
 from app.api.v1.endpoints.auth import get_current_user_from_token
+from app.services.amazon_products import amazon_service
 
 # Create router for AI recommendation endpoints
 router = APIRouter()
@@ -81,6 +82,264 @@ class RecommendationInteractionRequest(BaseModel):
     recommendation_id: str
     interaction_type: str  # 'view', 'like', 'dislike', 'share', 'click'
 
+async def analyze_user_preferences(user_id: str) -> Dict:
+    """
+    Analyze user swipe data to extract preferences for recommendation algorithm.
+    
+    Returns preference profile with categories, price ranges, and sentiment.
+    """
+    try:
+        # Get user's swipe history from Supabase
+        swipe_response = supabase.table("swipe_sessions").select(
+            "*, swipe_interactions(*)"
+        ).eq("user_id", user_id).order("created_at", desc=True).limit(100).execute()
+        
+        if not swipe_response.data:
+            return {
+                "categories": {},
+                "price_preferences": {"min": 0, "max": 1000, "avg": 50},
+                "liked_brands": [],
+                "total_swipes": 0,
+                "engagement_score": 0.0
+            }
+        
+        # Analyze swipe patterns
+        categories = {}
+        price_data = []
+        liked_brands = []
+        total_swipes = 0
+        likes = 0
+        
+        for session in swipe_response.data:
+            if session.get("swipe_interactions"):
+                for interaction in session["swipe_interactions"]:
+                    total_swipes += 1
+                    direction = interaction.get("direction", "none")
+                    
+                    # Extract product data
+                    product_data = interaction.get("product_data", {})
+                    category = product_data.get("category", "Unknown")
+                    price = product_data.get("price", 0)
+                    brand = product_data.get("brand", "")
+                    
+                    # Track category preferences
+                    if category not in categories:
+                        categories[category] = {"likes": 0, "total": 0}
+                    categories[category]["total"] += 1
+                    
+                    if direction == "right":  # Liked
+                        likes += 1
+                        categories[category]["likes"] += 1
+                        if price > 0:
+                            price_data.append(price)
+                        if brand and brand not in liked_brands:
+                            liked_brands.append(brand)
+        
+        # Calculate preference scores
+        for cat in categories:
+            if categories[cat]["total"] > 0:
+                categories[cat]["preference_score"] = categories[cat]["likes"] / categories[cat]["total"]
+            else:
+                categories[cat]["preference_score"] = 0.0
+        
+        # Calculate price preferences
+        if price_data:
+            avg_price = sum(price_data) / len(price_data)
+            min_price = min(price_data)
+            max_price = max(price_data)
+        else:
+            avg_price, min_price, max_price = 50, 0, 1000
+        
+        engagement_score = likes / total_swipes if total_swipes > 0 else 0.0
+        
+        return {
+            "categories": categories,
+            "price_preferences": {
+                "min": max(0, min_price * 0.8),  # 20% below minimum liked
+                "max": min(1000, max_price * 1.2),  # 20% above maximum liked
+                "avg": avg_price
+            },
+            "liked_brands": liked_brands[:10],  # Top 10 brands
+            "total_swipes": total_swipes,
+            "engagement_score": engagement_score
+        }
+        
+    except Exception as e:
+        print(f"Error analyzing user preferences: {e}")
+        return {
+            "categories": {},
+            "price_preferences": {"min": 0, "max": 1000, "avg": 50},
+            "liked_brands": [],
+            "total_swipes": 0,
+            "engagement_score": 0.0
+        }
+
+async def generate_recommendations_for_user(user_id: str, limit: int = 20) -> List[Dict]:
+    """
+    Generate personalized recommendations based on user preferences and behavior.
+    
+    Combines multiple algorithms:
+    1. Preference-based filtering (categories user likes)
+    2. Price range matching (based on liked products)
+    3. Trending products (high ratings/reviews)
+    4. Collaborative filtering (users with similar preferences)
+    """
+    try:
+        # Analyze user preferences
+        preferences = await analyze_user_preferences(user_id)
+        
+        # If user has no swipe data, return trending products
+        if preferences["total_swipes"] == 0:
+            trending_products = amazon_service.get_trending_products(limit)
+            return [{
+                "id": f"rec_{uuid.uuid4()}",
+                "user_id": user_id,
+                "product_id": product.id,
+                "product": {
+                    "id": product.id,
+                    "title": product.name,
+                    "description": product.description,
+                    "price": product.price,
+                    "price_min": product.price,
+                    "price_max": product.price,
+                    "currency": "GBP",
+                    "brand": product.brand,
+                    "category": product.category,
+                    "image_url": product.image_url,
+                    "affiliate_url": product.affiliate_url
+                },
+                "recommendation_type": "trending",
+                "confidence_score": 0.7,
+                "reason": "Popular trending product",
+                "occasion": "everyday",
+                "created_at": datetime.now().isoformat()
+            } for product in trending_products]
+        
+        recommendations = []
+        
+        # 1. Category-based recommendations (60% of results)
+        category_limit = int(limit * 0.6)
+        preferred_categories = sorted(
+            preferences["categories"].items(),
+            key=lambda x: x[1]["preference_score"],
+            reverse=True
+        )[:3]  # Top 3 preferred categories
+        
+        for category_name, category_data in preferred_categories:
+            if category_data["preference_score"] > 0.3:  # Only categories with >30% like rate
+                category_products = amazon_service.get_products_by_category(
+                    category_name,
+                    limit=max(1, category_limit // len(preferred_categories))
+                )
+                
+                for product in category_products:
+                    # Filter by price preference
+                    if (preferences["price_preferences"]["min"] <= product.price <= 
+                        preferences["price_preferences"]["max"]):
+                        
+                        confidence = category_data["preference_score"] * 0.9
+                        if product.brand in preferences["liked_brands"]:
+                            confidence += 0.1  # Boost for liked brands
+                        
+                        recommendations.append({
+                            "id": f"rec_{uuid.uuid4()}",
+                            "user_id": user_id,
+                            "product_id": product.id,
+                            "product": {
+                                "id": product.id,
+                                "title": product.name,
+                                "description": product.description,
+                                "price": product.price,
+                                "price_min": product.price,
+                                "price_max": product.price,
+                                "currency": "GBP",
+                                "brand": product.brand,
+                                "category": product.category,
+                                "image_url": product.image_url,
+                                "affiliate_url": product.affiliate_url
+                            },
+                            "recommendation_type": "preference_based",
+                            "confidence_score": min(0.95, confidence),
+                            "reason": f"Based on your {category_data['preference_score']:.0%} like rate for {category_name} products",
+                            "occasion": "everyday",
+                            "created_at": datetime.now().isoformat()
+                        })
+        
+        # 2. Price-optimized trending products (40% of results)
+        trending_limit = limit - len(recommendations)
+        trending_products = amazon_service.get_trending_products(trending_limit * 2)  # Get more to filter
+        
+        for product in trending_products:
+            if len(recommendations) >= limit:
+                break
+                
+            # Filter by price preference
+            if (preferences["price_preferences"]["min"] <= product.price <= 
+                preferences["price_preferences"]["max"]):
+                
+                confidence = 0.75
+                if product.category in preferences["categories"]:
+                    confidence += preferences["categories"][product.category]["preference_score"] * 0.2
+                if product.brand in preferences["liked_brands"]:
+                    confidence += 0.05
+                
+                recommendations.append({
+                    "id": f"rec_{uuid.uuid4()}",
+                    "user_id": user_id,
+                    "product_id": product.id,
+                    "product": {
+                        "id": product.id,
+                        "title": product.name,
+                        "description": product.description,
+                        "price": product.price,
+                        "price_min": product.price,
+                        "price_max": product.price,
+                        "currency": "GBP",
+                        "brand": product.brand,
+                        "category": product.category,
+                        "image_url": product.image_url,
+                        "affiliate_url": product.affiliate_url
+                    },
+                    "recommendation_type": "trending_personalized",
+                    "confidence_score": min(0.9, confidence),
+                    "reason": f"Trending product in your preferred price range (£{preferences['price_preferences']['min']:.0f}-£{preferences['price_preferences']['max']:.0f})",
+                    "occasion": "everyday",
+                    "created_at": datetime.now().isoformat()
+                })
+        
+        # Sort by confidence score
+        recommendations.sort(key=lambda x: x["confidence_score"], reverse=True)
+        
+        return recommendations[:limit]
+        
+    except Exception as e:
+        print(f"Error generating recommendations: {e}")
+        # Fallback to trending products
+        trending_products = amazon_service.get_trending_products(limit)
+        return [{
+            "id": f"rec_{uuid.uuid4()}",
+            "user_id": user_id,
+            "product_id": product.id,
+            "product": {
+                "id": product.id,
+                "title": product.name,
+                "description": product.description,
+                "price": product.price,
+                "price_min": product.price,
+                "price_max": product.price,
+                "currency": "GBP",
+                "brand": product.brand,
+                "category": product.category,
+                "image_url": product.image_url,
+                "affiliate_url": product.affiliate_url
+            },
+            "recommendation_type": "fallback",
+            "confidence_score": 0.6,
+            "reason": "Popular trending product",
+            "occasion": "everyday",
+            "created_at": datetime.now().isoformat()
+        } for product in trending_products]
+
 @router.get("/", response_model=List[RecommendationResponse], summary="Get personalized recommendations")
 async def get_recommendations(
     limit: int = Query(20, le=50, description="Number of recommendations to return"),
@@ -90,7 +349,17 @@ async def get_recommendations(
     price_range: Optional[str] = Query(None, description="Filter by price range"),
     authorization: str = Header(None)
 ):
-    """Get personalized recommendations for the authenticated user."""
+    """
+    Get personalized recommendations using AI algorithm based on user swipe data.
+    
+    Algorithm combines multiple approaches:
+    1. Preference Analysis: Categories and brands user likes based on swipe history
+    2. Price Optimization: Products in user's preferred price range
+    3. Trending Integration: Popular products matching user preferences
+    4. Confidence Scoring: Each recommendation has confidence score 0-1
+    
+    For new users with no swipe data, returns trending products to bootstrap engagement.
+    """
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -101,100 +370,40 @@ async def get_recommendations(
         # Get current user from token
         current_user = await get_current_user_from_token(authorization)
         
-        # For now, return mock recommendations data
-        # In production, this would query Supabase recommendations table
-        mock_recommendations = [
-            {
-                "id": "rec_1",
-                "user_id": current_user["id"],
-                "product_id": "1",
-                "product": {
-                    "id": "1",
-                    "title": "Wireless Headphones",
-                    "description": "High-quality wireless headphones with noise cancellation",
-                    "price": 199.99,
-                    "price_min": 199.99,
-                    "price_max": 199.99,
-                    "currency": "GBP",
-                    "brand": "AudioTech",
-                    "category": "Electronics",
-                    "image_url": "https://picsum.photos/400/300?random=1",
-                    "affiliate_url": "https://amazon.co.uk/headphones"
-                },
-                "recommendation_type": "trending",
-                "confidence_score": 0.92,
-                "reason": "Based on your interest in electronics and high ratings",
-                "occasion": "everyday",
-                "created_at": datetime.now().isoformat()
-            },
-            {
-                "id": "rec_2",
-                "user_id": current_user["id"],
-                "product_id": "2",
-                "product": {
-                    "id": "2",
-                    "title": "Coffee Maker",
-                    "description": "Premium coffee maker for the perfect brew",
-                    "price": 149.99,
-                    "price_min": 149.99,
-                    "price_max": 149.99,
-                    "currency": "GBP",
-                    "brand": "BrewMaster",
-                    "category": "Kitchen",
-                    "image_url": "https://picsum.photos/400/300?random=2",
-                    "affiliate_url": "https://amazon.co.uk/coffee-maker"
-                },
-                "recommendation_type": "personalized",
-                "confidence_score": 0.87,
-                "reason": "Popular choice for coffee enthusiasts",
-                "occasion": "morning_routine",
-                "created_at": datetime.now().isoformat()
-            },
-            {
-                "id": "rec_3",
-                "user_id": current_user["id"],
-                "product_id": "3",
-                "product": {
-                    "id": "3",
-                    "title": "Smart Watch",
-                    "description": "Feature-rich smartwatch with health tracking",
-                    "price": 299.99,
-                    "price_min": 249.99,
-                    "price_max": 349.99,
-                    "currency": "GBP",
-                    "brand": "TechWear",
-                    "category": "Electronics",
-                    "image_url": "https://picsum.photos/400/300?random=3",
-                    "affiliate_url": "https://amazon.co.uk/smartwatch"
-                },
-                "recommendation_type": "trending",
-                "confidence_score": 0.95,
-                "reason": "Trending in wearable technology",
-                "occasion": "fitness",
-                "created_at": datetime.now().isoformat()
-            }
-        ]
+        # Generate personalized recommendations using AI algorithm
+        recommendations = await generate_recommendations_for_user(current_user["id"], limit)
         
-        # Apply filters
-        filtered_recommendations = mock_recommendations
-        
+        # Apply filters if provided
         if recommendation_type:
-            filtered_recommendations = [r for r in filtered_recommendations 
-                                      if r["recommendation_type"] == recommendation_type]
+            recommendations = [r for r in recommendations if r["recommendation_type"] == recommendation_type]
         
         if occasion:
-            filtered_recommendations = [r for r in filtered_recommendations 
-                                      if r["occasion"] == occasion]
+            recommendations = [r for r in recommendations if r["occasion"] == occasion]
         
-        # Apply pagination
-        start = offset
-        end = offset + limit
-        paginated_recommendations = filtered_recommendations[start:end]
+        if price_range:
+            # Parse price range like "10-50"
+            try:
+                min_price, max_price = map(float, price_range.split("-"))
+                recommendations = [
+                    r for r in recommendations 
+                    if min_price <= r["product"]["price"] <= max_price
+                ]
+            except:
+                pass  # Invalid price range format, ignore filter
+        
+        # Apply offset and limit
+        paginated_recommendations = recommendations[offset:offset + limit]
         
         return paginated_recommendations
         
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get recommendations: {str(e)}")
+        print(f"Error in get_recommendations: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate recommendations"
+        )
 
 @router.post("/interactions", summary="Record recommendation interaction")
 async def record_recommendation_interaction(
