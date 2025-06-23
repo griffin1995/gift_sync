@@ -1,3 +1,40 @@
+"""
+GiftSync User Data Model
+
+SQLAlchemy model for user entities in the GiftSync platform. Handles user
+registration, authentication, profile management, and subscription tiers
+with comprehensive data validation and privacy controls.
+
+Key Features:
+  - Secure authentication with bcrypt password hashing
+  - GDPR-compliant data storage and privacy controls
+  - Subscription tier management for feature access
+  - User preference tracking for personalized recommendations
+  - Comprehensive profile management with optional fields
+  - Soft delete functionality for data retention compliance
+
+Business Logic:
+  - Free tier: Basic swipe functionality
+  - Plus tier: Enhanced recommendations and analytics
+  - Pro tier: Advanced features and priority support
+  - Gender preferences for recommendation personalization
+  - Location data for local deal optimization
+
+Privacy & Security:
+  - Password hashing with salt using bcrypt
+  - Email uniqueness constraints for security
+  - Soft delete preserves data for analytics while respecting user privacy
+  - GDPR consent tracking and management
+  - Optional fields respect user privacy preferences
+
+Database Design:
+  - UUID primary keys for security and scalability
+  - Indexed email field for fast authentication queries
+  - JSON fields for flexible preference storage
+  - Timestamps for audit trails and analytics
+  - Enum constraints for data integrity
+"""
+
 from sqlalchemy import Column, String, DateTime, Boolean, Text, JSON, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
@@ -8,6 +45,13 @@ from app.core.database import Base
 
 
 class UserGender(str, enum.Enum):
+    """
+    User gender enumeration for personalized recommendations.
+    
+    Used to tailor gift recommendations based on gender preferences
+    and improve ML model accuracy. Follows inclusive design principles
+    with privacy-first approach.
+    """
     MALE = "male"
     FEMALE = "female"
     NON_BINARY = "non_binary"
@@ -15,6 +59,17 @@ class UserGender(str, enum.Enum):
 
 
 class SubscriptionTier(str, enum.Enum):
+    """
+    User subscription tier enumeration for feature access control.
+    
+    Defines different levels of service access and feature availability
+    within the GiftSync platform. Used for monetization and feature gating.
+    
+    Tiers:
+        FREE: Basic swipe functionality and limited recommendations
+        PLUS: Enhanced recommendations, analytics, and priority support
+        PRO: All features, advanced analytics, and premium support
+    """
     FREE = "free"
     PLUS = "plus"
     PRO = "pro"

@@ -1,104 +1,197 @@
+/**
+ * GiftSync Application Configuration
+ * 
+ * Centralised configuration management for the entire GiftSync application.
+ * Provides environment-specific settings, API endpoints, feature flags,
+ * and business logic constants.
+ * 
+ * Configuration Categories:
+ *   - Environment: API URLs, deployment settings, analytics keys
+ *   - API Endpoints: Complete REST API endpoint definitions
+ *   - Application: UI settings, validation rules, error messages
+ *   - Amazon Associates: Affiliate program configuration and utilities
+ *   - Theme: Design system constants and styling
+ * 
+ * Environment Variables:
+ *   - All sensitive data loaded from environment variables
+ *   - Fallback defaults for development
+ *   - Production vs development feature toggles
+ * 
+ * Usage:
+ *   import { config, endpoints, appConfig } from '@/config';
+ *   const apiUrl = config.apiUrl;
+ *   const loginEndpoint = endpoints.auth.login;
+ */
+
 import { EnvironmentConfig } from '@/types';
 
-// Environment configuration
+// ==============================================================================
+// ENVIRONMENT CONFIGURATION
+// ==============================================================================
+// Runtime environment settings loaded from environment variables
+
+/**
+ * Core environment configuration for API communication and external services.
+ * 
+ * Automatically adapts between development and production environments
+ * based on NODE_ENV and environment variable availability.
+ */
 export const config: EnvironmentConfig = {
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  webUrl: process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000',
-  mixpanelToken: process.env.NEXT_PUBLIC_MIXPANEL_TOKEN,
-  sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  googleAnalyticsId: process.env.NEXT_PUBLIC_GA_ID,
-  posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-  posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  isProduction: process.env.NODE_ENV === 'production',
-  isDevelopment: process.env.NODE_ENV === 'development',
-  version: process.env.npm_package_version || '1.0.0',
+  // Core service URLs
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',        // Backend API base URL
+  webUrl: process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000',        // Frontend application URL
   
-  // Amazon Associates Configuration
-  amazonAssociateTag: process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG || 'giftsync-21',
-  amazonRegion: process.env.NEXT_PUBLIC_AMAZON_REGION || 'uk',
-  amazonApiKey: process.env.NEXT_PUBLIC_AMAZON_API_KEY,
-  amazonSecretKey: process.env.NEXT_PUBLIC_AMAZON_SECRET_KEY,
+  // Analytics and monitoring service keys
+  mixpanelToken: process.env.NEXT_PUBLIC_MIXPANEL_TOKEN,                     // Mixpanel analytics (optional)
+  sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,                             // Sentry error tracking (optional)
+  googleAnalyticsId: process.env.NEXT_PUBLIC_GA_ID,                          // Google Analytics ID (optional)
+  posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,                           // PostHog analytics key
+  posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,                         // PostHog service host
+  
+  // Environment detection
+  isProduction: process.env.NODE_ENV === 'production',                      // Production environment flag
+  isDevelopment: process.env.NODE_ENV === 'development',                    // Development environment flag
+  version: process.env.npm_package_version || '1.0.0',                      // Application version
+  
+  // Amazon Associates affiliate program configuration
+  amazonAssociateTag: process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG || 'giftsync-21', // Approved associate tag
+  amazonRegion: process.env.NEXT_PUBLIC_AMAZON_REGION || 'uk',                       // Target market region
+  amazonApiKey: process.env.NEXT_PUBLIC_AMAZON_API_KEY,                              // Product Advertising API key
+  amazonSecretKey: process.env.NEXT_PUBLIC_AMAZON_SECRET_KEY,                        // API secret key
 };
 
-// API endpoints
+// ==============================================================================
+// API ENDPOINTS
+// ==============================================================================
+// Complete REST API endpoint definitions for all backend services
+
+/**
+ * Comprehensive API endpoint configuration.
+ * 
+ * Organises all backend API endpoints by functional area for easy
+ * maintenance and consistent usage across the application.
+ * 
+ * Pattern:
+ *   - Static endpoints: Direct string paths
+ *   - Dynamic endpoints: Functions that accept parameters
+ *   - Consistent naming: Resource-based organisation
+ */
 export const endpoints = {
-  // Authentication
+  // ===========================================================================
+  // AUTHENTICATION ENDPOINTS
+  // ===========================================================================
+  // User authentication and session management
   auth: {
-    login: '/api/v1/auth/login',
-    register: '/api/v1/auth/register',
-    refresh: '/api/v1/auth/refresh',
-    logout: '/api/v1/auth/logout',
-    me: '/api/v1/auth/me',
-    forgotPassword: '/api/v1/auth/forgot-password',
-    resetPassword: '/api/v1/auth/reset-password',
-    verifyEmail: '/api/v1/auth/verify-email',
+    login: '/api/v1/auth/login',                    // POST: Authenticate user with email/password
+    register: '/api/v1/auth/register',              // POST: Create new user account
+    refresh: '/api/v1/auth/refresh',                // POST: Refresh expired access token
+    logout: '/api/v1/auth/logout',                  // POST: End user session
+    me: '/api/v1/auth/me',                          // GET: Get current user profile
+    forgotPassword: '/api/v1/auth/forgot-password', // POST: Request password reset
+    resetPassword: '/api/v1/auth/reset-password',   // POST: Reset password with token
+    verifyEmail: '/api/v1/auth/verify-email',       // POST: Verify email address
   },
   
-  // Users
+  // ===========================================================================
+  // USER MANAGEMENT ENDPOINTS
+  // ===========================================================================
+  // User profile and preference management
   users: {
-    profile: '/api/v1/users/me',
-    updateProfile: '/api/v1/users/me',
-    preferences: '/api/v1/users/me/preferences',
-    statistics: '/api/v1/users/me/statistics',
-    deleteAccount: '/api/v1/users/me',
+    profile: '/api/v1/users/me',                    // GET: Get user profile
+    updateProfile: '/api/v1/users/me',              // PUT: Update user profile
+    preferences: '/api/v1/users/me/preferences',    // GET/PUT: User preferences
+    statistics: '/api/v1/users/me/statistics',      // GET: User activity statistics
+    deleteAccount: '/api/v1/users/me',              // DELETE: Permanently delete account
   },
   
-  // Products
+  // ===========================================================================
+  // PRODUCT CATALOG ENDPOINTS
+  // ===========================================================================
+  // Product search, filtering, and retrieval
   products: {
-    list: '/api/v1/products',
-    search: '/api/v1/products/search',
-    categories: '/api/v1/products/categories',
-    featured: '/api/v1/products/featured',
-    trending: '/api/v1/products/trending',
-    byCategory: (categoryId: string) => `/api/v1/products/category/${categoryId}`,
-    byId: (id: string) => `/api/v1/products/${id}`,
-    recommendations: '/api/v1/products/recommendations',
+    list: '/api/v1/products',                                                   // GET: List products with filters
+    search: '/api/v1/products/search',                                          // POST: Search products by query
+    categories: '/api/v1/products/categories',                                  // GET: Get product categories
+    featured: '/api/v1/products/featured',                                      // GET: Get featured products
+    trending: '/api/v1/products/trending',                                      // GET: Get trending products
+    byCategory: (categoryId: string) => `/api/v1/products/category/${categoryId}`, // GET: Products by category
+    byId: (id: string) => `/api/v1/products/${id}`,                            // GET: Single product details
+    recommendations: '/api/v1/products/recommendations',                       // GET: Product recommendations
   },
   
-  // Swipes
+  // ===========================================================================
+  // SWIPE INTERACTION ENDPOINTS
+  // ===========================================================================
+  // User preference collection through swipe gestures
   swipes: {
-    sessions: '/api/v1/swipes/sessions',
-    createSession: '/api/v1/swipes/sessions',
-    currentSession: '/api/v1/swipes/sessions/current',
-    interactions: (sessionId: string) => `/api/v1/swipes/sessions/${sessionId}/interactions`,
-    analytics: '/api/v1/swipes/analytics',
+    sessions: '/api/v1/swipes/sessions',                                                    // GET: List user's swipe sessions
+    createSession: '/api/v1/swipes/sessions',                                               // POST: Start new swipe session
+    currentSession: '/api/v1/swipes/sessions/current',                                      // GET: Get active session
+    interactions: (sessionId: string) => `/api/v1/swipes/sessions/${sessionId}/interactions`, // POST: Record swipe interaction
+    analytics: '/api/v1/swipes/analytics',                                                  // GET: Swipe analytics data
   },
   
-  // Recommendations
+  // ===========================================================================
+  // AI RECOMMENDATION ENDPOINTS
+  // ===========================================================================
+  // Machine learning powered product recommendations
   recommendations: {
-    generate: '/api/v1/recommendations/generate',
-    list: '/api/v1/recommendations',
-    byId: (id: string) => `/api/v1/recommendations/${id}`,
-    feedback: (id: string) => `/api/v1/recommendations/${id}/feedback`,
-    refresh: '/api/v1/recommendations/refresh',
+    generate: '/api/v1/recommendations/generate',                               // POST: Generate new recommendations
+    list: '/api/v1/recommendations',                                            // GET: Get user's recommendations
+    byId: (id: string) => `/api/v1/recommendations/${id}`,                     // GET: Single recommendation details
+    feedback: (id: string) => `/api/v1/recommendations/${id}/feedback`,        // POST: Provide recommendation feedback
+    refresh: '/api/v1/recommendations/refresh',                                 // POST: Refresh recommendation list
   },
   
-  // Gift Links
+  // ===========================================================================
+  // GIFT LINK SHARING ENDPOINTS
+  // ===========================================================================
+  // Social sharing and gift link management
   giftLinks: {
-    create: '/api/v1/gift-links',
-    list: '/api/v1/gift-links',
-    byId: (id: string) => `/api/v1/gift-links/${id}`,
-    byToken: (token: string) => `/api/v1/gift-links/share/${token}`,
-    delete: (id: string) => `/api/v1/gift-links/${id}`,
-    analytics: (id: string) => `/api/v1/gift-links/${id}/analytics`,
+    create: '/api/v1/gift-links',                                               // POST: Create shareable gift link
+    list: '/api/v1/gift-links',                                                 // GET: List user's gift links
+    byId: (id: string) => `/api/v1/gift-links/${id}`,                          // GET: Gift link details
+    byToken: (token: string) => `/api/v1/gift-links/share/${token}`,           // GET: Public gift link access
+    delete: (id: string) => `/api/v1/gift-links/${id}`,                        // DELETE: Remove gift link
+    analytics: (id: string) => `/api/v1/gift-links/${id}/analytics`,           // GET: Gift link analytics
   },
   
-  // Analytics
+  // ===========================================================================
+  // ANALYTICS AND TRACKING ENDPOINTS
+  // ===========================================================================
+  // User behavior tracking and business analytics
   analytics: {
-    track: '/api/v1/analytics/track',
-    events: '/api/v1/analytics/events',
-    dashboard: '/api/v1/analytics/dashboard',
+    track: '/api/v1/analytics/track',                                           // POST: Track user events
+    events: '/api/v1/analytics/events',                                         // GET: Query analytics events
+    dashboard: '/api/v1/analytics/dashboard',                                   // GET: Analytics dashboard data
   },
   
-  // Health
-  health: '/health',
+  // ===========================================================================
+  // SYSTEM HEALTH ENDPOINTS
+  // ===========================================================================
+  // Service monitoring and health checks
+  health: '/health',                                                            // GET: System health status
 };
 
-// App configuration
+// ==============================================================================
+// APPLICATION CONFIGURATION
+// ==============================================================================
+// Business logic, UI settings, and application constants
+
+/**
+ * Comprehensive application configuration containing all business rules,
+ * UI settings, validation patterns, and feature flags.
+ * 
+ * Used throughout the application for consistent behavior and easy
+ * maintenance of business logic.
+ */
 export const appConfig = {
-  name: 'GiftSync',
-  description: 'AI-powered gift recommendation platform',
-  tagline: 'Find the perfect gift with AI',
+  // ===========================================================================
+  // BRAND AND MESSAGING
+  // ===========================================================================
+  name: 'GiftSync',                                      // Application name
+  description: 'AI-powered gift recommendation platform', // SEO description
+  tagline: 'Find the perfect gift with AI',              // Marketing tagline
   
   // Swipe settings
   swipe: {

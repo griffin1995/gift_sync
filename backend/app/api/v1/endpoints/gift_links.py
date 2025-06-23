@@ -1,3 +1,56 @@
+"""
+GiftSync Shareable Gift Links API Endpoints
+
+Manages creation, sharing, and tracking of shareable gift recommendation links.
+Enables users to create curated gift collections that can be shared with friends,
+family, or on social media for special occasions and celebrations.
+
+Key Features:
+  - Secure shareable link generation with unique IDs
+  - Customizable gift collections with multiple products
+  - Public and private sharing options
+  - Link expiration and access control
+  - View tracking and engagement analytics
+  - Social media optimization with Open Graph metadata
+
+Social Commerce:
+  - Viral marketing through social sharing
+  - Affiliate revenue from shared links
+  - User engagement through gift curation
+  - Brand awareness through shared collections
+  - Conversion tracking from social traffic
+
+API Endpoints:
+  - POST /gift-links/                       # Create new gift link
+  - GET /gift-links/                        # Get user's gift links
+  - GET /gift-links/{id}                    # Get specific gift link details
+  - PUT /gift-links/{id}                    # Update gift link
+  - DELETE /gift-links/{id}                 # Delete gift link
+  - GET /gift-links/{id}/analytics          # Get link performance metrics
+
+Security Features:
+  - Cryptographically secure link generation
+  - User authentication for creation and management
+  - Public/private access control
+  - Expiration date enforcement
+  - Rate limiting to prevent abuse
+  - GDPR-compliant sharing and tracking
+
+Social Sharing Integration:
+  - Open Graph meta tags for rich social previews
+  - Twitter Card support for enhanced sharing
+  - WhatsApp and messaging app optimization
+  - URL shortening for character-limited platforms
+  - Social platform-specific tracking parameters
+
+Analytics and Tracking:
+  - Link view counts and unique visitors
+  - Geographic distribution of link access
+  - Social platform attribution (Facebook, Twitter, etc.)
+  - Conversion rates from link views to purchases
+  - Time-based engagement patterns
+"""
+
 from fastapi import APIRouter, HTTPException, status, Query, Header
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -9,6 +62,7 @@ from pydantic import BaseModel
 from app.database import supabase
 from app.api.v1.endpoints.auth import get_current_user_from_token
 
+# Create router for gift link sharing endpoints
 router = APIRouter()
 
 class GiftLinkRequest(BaseModel):

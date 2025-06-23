@@ -1,10 +1,47 @@
-/** @type {import('tailwindcss').Config} */
+/**
+ * GiftSync Tailwind CSS Configuration
+ * 
+ * Custom Tailwind CSS configuration for the GiftSync gift recommendation platform.
+ * Defines the complete design system including brand colors, typography, spacing,
+ * animations, and component styles for consistent UI/UX across the application.
+ * 
+ * Key Features:
+ *   - GiftSync brand color palette with semantic naming
+ *   - Extended utility classes for gift-specific UI patterns
+ *   - Custom animations for swipe interactions and loading states
+ *   - Typography scale optimized for readability and hierarchy
+ *   - Responsive design utilities for mobile-first development
+ * 
+ * Design System:
+ *   - Primary colors: Purple gradient (#f03dff to #59006d)
+ *   - Secondary colors: Blue gradient for accents and CTAs
+ *   - Success/Error: Semantic colors for user feedback
+ *   - Neutral grays: For backgrounds and subtle UI elements
+ * 
+ * Component Integration:
+ *   - Swipe card animations and transforms
+ *   - Loading spinner and skeleton utilities
+ *   - Button variants and interactive states
+ *   - Form styling and validation states
+ * 
+ * Performance:
+ *   - Purge unused styles in production builds
+ *   - JIT compilation for faster development builds
+ *   - Optimized for tree-shaking and minimal bundle size
+ * 
+ * @type {import('tailwindcss').Config}
+ */
 module.exports = {
+  // ===========================================================================
+  // CONTENT PATHS
+  // ===========================================================================
+  // Define where Tailwind should look for class names to include in build
+  
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',      // Next.js pages directory
+    './components/**/*.{js,ts,jsx,tsx,mdx}', // Components directory
+    './app/**/*.{js,ts,jsx,tsx,mdx}',        // Next.js app directory
+    './src/**/*.{js,ts,jsx,tsx,mdx}',        // Source directory
   ],
   theme: {
     extend: {

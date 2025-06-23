@@ -1,37 +1,92 @@
+# =============================================================================
+# GiftSync Development Docker Compose Configuration
+# =============================================================================
+# 
+# Complete development environment setup for the GiftSync AI-powered gift
+# recommendation platform. Provides all necessary services including database,
+# caching, object storage, ML training, and monitoring infrastructure.
+# 
+# Key Features:
+#   - Full-stack development environment
+#   - Service dependency management with health checks
+#   - Data persistence across container restarts
+#   - Development and production service profiles
+#   - Monitoring and observability stack
+#   - Machine learning training pipeline
+# 
+# Service Architecture:
+#   - PostgreSQL: Primary database with persistent storage
+#   - Redis: Caching and session management
+#   - MinIO: S3-compatible object storage for files and ML models
+#   - FastAPI Backend: Python API server with auto-reload
+#   - ML Training: Dedicated container for recommendation models
+#   - Nginx: Reverse proxy and load balancer (production)
+#   - Prometheus: Metrics collection (monitoring profile)
+#   - Grafana: Metrics visualization (monitoring profile)
+# 
+# Usage:
+#   Development:     docker-compose up
+#   With ML:         docker-compose --profile ml up
+#   Production:      docker-compose --profile production up
+#   Monitoring:      docker-compose --profile monitoring up
+#   Everything:      docker-compose --profile ml --profile monitoring up
+# 
+# Profiles:
+#   - default: Core development services (postgres, redis, minio, backend)
+#   - ml: Adds machine learning training service
+#   - production: Adds nginx reverse proxy
+#   - monitoring: Adds prometheus and grafana
+# 
+# =============================================================================
+
 version: '3.8'
 
+# =============================================================================
+# SERVICES CONFIGURATION
+# =============================================================================
+
 services:
+  # ===========================================================================
+  # DATABASE SERVICE
+  # ===========================================================================
+  # PostgreSQL 15 database for user data, product catalog, and analytics
+  
   postgres:
-    image: postgres:15
+    image: postgres:15                       # Latest stable PostgreSQL version
     container_name: giftsync_postgres
     environment:
-      POSTGRES_USER: giftsync
-      POSTGRES_PASSWORD: giftsync_dev_password
-      POSTGRES_DB: giftsync_dev
+      POSTGRES_USER: giftsync               # Database username
+      POSTGRES_PASSWORD: giftsync_dev_password  # Database password (change in production)
+      POSTGRES_DB: giftsync_dev             # Default database name
     ports:
-      - "5433:5432"
+      - "5433:5432"                         # Map to 5433 to avoid conflicts with local postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data  # Persistent data storage
+      - ./database/init:/docker-entrypoint-initdb.d  # Initialization scripts
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U giftsync"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "pg_isready -U giftsync"]  # Health check command
+      interval: 30s                         # Check every 30 seconds
+      timeout: 10s                          # Timeout after 10 seconds
+      retries: 3                            # Retry 3 times before marking unhealthy
 
+  # ===========================================================================
+  # CACHING SERVICE
+  # ===========================================================================
+  # Redis for session storage, API caching, and real-time data
+  
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine                    # Alpine Linux version for smaller size
     container_name: giftsync_redis
     ports:
-      - "6379:6379"
+      - "6379:6379"                         # Standard Redis port
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+      - redis_data:/data                    # Persistent cache storage
+    command: redis-server --appendonly yes  # Enable data persistence
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "redis-cli", "ping"]    # Simple ping health check
+      interval: 30s                         # Check every 30 seconds
+      timeout: 10s                          # Timeout after 10 seconds
+      retries: 3                            # Retry 3 times before marking unhealthy
 
   minio:
     image: minio/minio:latest
@@ -150,16 +205,26 @@ services:
     profiles:
       - monitoring
 
+# =============================================================================
+# PERSISTENT VOLUMES
+# =============================================================================
+# Named volumes for data persistence across container restarts
+
 volumes:
-  postgres_data:
-  redis_data:
-  minio_data:
-  backend_cache:
-  ml_models:
-  ml_data:
-  prometheus_data:
-  grafana_data:
+  postgres_data:                            # PostgreSQL database files
+  redis_data:                               # Redis cache and persistent data
+  minio_data:                               # MinIO object storage files
+  backend_cache:                            # Backend application cache
+  ml_models:                                # Trained ML models and artifacts
+  ml_data:                                  # ML training datasets and features
+  prometheus_data:                          # Prometheus metrics and time series data
+  grafana_data:                             # Grafana dashboards and configuration
+
+# =============================================================================
+# NETWORK CONFIGURATION
+# =============================================================================
+# Custom network for service-to-service communication
 
 networks:
   default:
-    name: giftsync_network
+    name: giftsync_network                  # Named network for easier management

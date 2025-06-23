@@ -1,3 +1,46 @@
+"""
+GiftSync AI Recommendation Engine API Endpoints
+
+Provides intelligent gift recommendations using machine learning algorithms
+and user behavior analysis. Generates personalized product suggestions based
+on user preferences, swipe history, demographic data, and collaborative filtering.
+
+Key Features:
+  - AI-powered personalized recommendations
+  - Multiple recommendation algorithms (collaborative, content-based, hybrid)
+  - Real-time preference learning from swipe interactions
+  - Contextual recommendations (occasions, budget, relationships)
+  - Performance tracking and A/B testing for algorithm optimization
+  - Seasonal and trending product integration
+
+Business Intelligence:
+  - Conversion tracking from recommendations to purchases
+  - Click-through rate optimization for different algorithms
+  - Revenue attribution and commission tracking
+  - User engagement analytics and satisfaction metrics
+  - Performance comparison across recommendation strategies
+
+API Endpoints:
+  - GET /recommendations/                    # Get personalized recommendations
+  - GET /recommendations/trending/           # Get trending recommendations
+  - GET /recommendations/{id}                # Get specific recommendation details
+  - POST /recommendations/feedback/          # Submit recommendation feedback
+
+Machine Learning Pipeline:
+  1. User behavior data collection (swipes, clicks, purchases)
+  2. Feature engineering and preference vector creation
+  3. Model training (collaborative filtering, deep learning)
+  4. Real-time inference and recommendation generation
+  5. A/B testing and performance optimization
+  6. Continuous learning and model updates
+
+Integration Points:
+  - Swipe data: Feeds preference learning algorithms
+  - Product catalog: Source of recommendable items
+  - User profiles: Demographic and preference context
+  - Analytics: Performance and business metrics tracking
+"""
+
 from fastapi import APIRouter, HTTPException, status, Query, Header
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -7,6 +50,7 @@ from pydantic import BaseModel
 from app.database import supabase
 from app.api.v1.endpoints.auth import get_current_user_from_token
 
+# Create router for AI recommendation endpoints
 router = APIRouter()
 
 class ProductData(BaseModel):

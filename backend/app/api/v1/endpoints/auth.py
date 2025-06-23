@@ -1,3 +1,30 @@
+"""
+GiftSync Authentication API Endpoints
+
+Provides secure user authentication services including registration,
+login, token refresh, and session management. Implements JWT-based
+authentication with bcrypt password hashing.
+
+Security Features:
+- JWT access tokens (30 minute expiry)
+- JWT refresh tokens (30 day expiry)
+- bcrypt password hashing with salt
+- Registration toggle via feature flag
+- Comprehensive input validation
+- Rate limiting ready (implement in production)
+
+Endpoints:
+- POST /auth/register: Create new user account
+- POST /auth/login: Authenticate existing user
+- POST /auth/refresh: Renew access token
+- GET /auth/me: Get current user profile
+- POST /auth/logout: End user session
+"""
+
+# ==============================================================================
+# IMPORTS AND DEPENDENCIES
+# ==============================================================================
+
 from datetime import timedelta, datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordRequestForm
@@ -13,10 +40,28 @@ from app.database import supabase
 from app.core.database import get_db
 from app.models_sqlalchemy.user import User
 
+# FastAPI router for authentication endpoints
 router = APIRouter()
 
-# Pydantic models for auth
+# ==============================================================================
+# REQUEST/RESPONSE MODELS
+# ==============================================================================
+# Pydantic models for request validation and response serialisation
+
 class UserRegistration(BaseModel):
+    """
+    User registration request model.
+    
+    Validates new user registration data with required fields
+    and optional marketing consent for GDPR compliance.
+    
+    Fields:
+        first_name: User's first name (required)
+        last_name: User's last name (required)
+        email: Valid email address (required, unique)
+        password: User password (required, min 8 chars)
+        marketing_consent: Optional marketing email consent (GDPR)
+    """
     first_name: str
     last_name: str
     email: EmailStr
@@ -24,10 +69,34 @@ class UserRegistration(BaseModel):
     marketing_consent: Optional[bool] = False
 
 class UserLogin(BaseModel):
+    """
+    User login request model.
+    
+    Validates user authentication credentials for login endpoint.
+    
+    Fields:
+        email: User's registered email address
+        password: User's password in plain text (encrypted in transit)
+    """
     email: EmailStr
     password: str
 
 class UserResponse(BaseModel):
+    """
+    User profile response model.
+    
+    Contains safe user data for API responses (excludes sensitive fields
+    like password hash).
+    
+    Fields:
+        id: Unique user identifier (UUID)
+        email: User's email address
+        first_name: User's first name
+        last_name: User's last name
+        subscription_tier: User's subscription level
+        created_at: Account creation timestamp (ISO format)
+        last_login: Most recent login timestamp (ISO format)
+    """
     id: str
     email: str
     first_name: str
@@ -37,14 +106,64 @@ class UserResponse(BaseModel):
     last_login: Optional[str] = None
 
 class AuthResponse(BaseModel):
+    """
+    Authentication response model.
+    
+    Contains JWT tokens and user profile data returned after
+    successful login or registration.
+    
+    Fields:
+        access_token: JWT access token (30 minute expiry)
+        refresh_token: JWT refresh token (30 day expiry)
+        user: Complete user profile data
+    """
     access_token: str
     refresh_token: str
     user: UserResponse
 
 
+# ==============================================================================
+# AUTHENTICATION ENDPOINTS
+# ==============================================================================
+
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserRegistration):
-    """Register a new user."""
+    """
+    Register a new user account.
+    
+    Creates a new user account with secure password hashing and returns
+    JWT tokens for immediate authentication. Includes email uniqueness
+    validation and GDPR compliance handling.
+    
+    Security Features:
+        - bcrypt password hashing with salt
+        - Email uniqueness validation
+        - UUID generation for user ID
+        - Immediate JWT token generation
+        - Feature flag protection
+    
+    Parameters:
+        user_data: UserRegistration model with required user information
+    
+    Returns:
+        AuthResponse: JWT tokens and user profile data
+    
+    Raises:
+        HTTPException 403: Registration disabled via feature flag
+        HTTPException 400: Email already exists
+        HTTPException 500: Database error during user creation
+    
+    Example:
+        POST /auth/register
+        {
+            "first_name": "John",
+            "last_name": "Smith", 
+            "email": "john@example.com",
+            "password": "SecurePass123",
+            "marketing_consent": true
+        }
+    """
+    # Check if registration is enabled via feature flag
     if not settings.ENABLE_REGISTRATION:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -52,7 +171,10 @@ async def register(user_data: UserRegistration):
         )
     
     try:
-        # Check if user already exists
+        # ===========================================================================
+        # EMAIL UNIQUENESS VALIDATION
+        # ===========================================================================
+        # Check if user already exists with this email address
         existing_users = await supabase.select(
             "users",
             select="email",
@@ -66,49 +188,71 @@ async def register(user_data: UserRegistration):
                 detail="User with this email already exists"
             )
         
-        # Hash password
+        # ===========================================================================
+        # SECURE PASSWORD HASHING
+        # ===========================================================================
+        # Hash password using bcrypt with automatically generated salt
         password_hash = bcrypt.hashpw(
-            user_data.password.encode('utf-8'),
-            bcrypt.gensalt()
-        ).decode('utf-8')
+            user_data.password.encode('utf-8'),  # Convert to bytes
+            bcrypt.gensalt()                     # Generate random salt
+        ).decode('utf-8')                        # Convert back to string for storage
         
-        # Create user data
-        user_id = str(uuid.uuid4())
+        # ===========================================================================
+        # USER DATA PREPARATION
+        # ===========================================================================
+        # Generate unique user ID and prepare user data for database insertion
+        user_id = str(uuid.uuid4())  # Generate UUID for user ID
         full_name = f"{user_data.first_name} {user_data.last_name}".strip()
+        
         user_create_data = {
-            "id": user_id,
-            "email": user_data.email,
-            "first_name": user_data.first_name,
-            "last_name": user_data.last_name,
-            "full_name": full_name,
-            "password_hash": password_hash,
-            "subscription_tier": "free",
-            "gdpr_consent": True,
-            "is_active": True,
-            "email_verified": False,
+            "id": user_id,                              # Unique user identifier
+            "email": user_data.email,                   # User's email address
+            "first_name": user_data.first_name,         # User's first name
+            "last_name": user_data.last_name,           # User's last name
+            "full_name": full_name,                     # Combined full name
+            "password_hash": password_hash,             # Securely hashed password
+            "subscription_tier": "free",                # Default to free tier
+            "gdpr_consent": True,                       # GDPR consent (required for registration)
+            "is_active": True,                          # Account is active
+            "email_verified": False,                    # Email verification pending
             # Note: created_at and updated_at will be set by database defaults
-            "last_login_at": datetime.now().isoformat()
+            "last_login_at": datetime.now().isoformat() # Set initial login time
         }
         
-        # Insert user into database
+        # ===========================================================================
+        # DATABASE USER CREATION
+        # ===========================================================================
+        # Insert new user record into database with service key privileges
         created_users = await supabase.insert(
-            "users",
-            user_create_data,
-            use_service_key=True
+            "users",                    # Target table
+            user_create_data,           # User data to insert
+            use_service_key=True        # Bypass RLS policies
         )
         
-        created_user = created_users[0]
+        created_user = created_users[0]  # Get created user record
         
-        # Generate tokens
+        # ===========================================================================
+        # JWT TOKEN GENERATION
+        # ===========================================================================
+        # Generate access and refresh tokens for immediate authentication
         access_token = jwt.encode(
-            {"user_id": created_user["id"], "email": created_user["email"]},
-            settings.SECRET_KEY,
-            algorithm="HS256"
+            {
+                "user_id": created_user["id"],     # User identifier for API requests
+                "email": created_user["email"],     # Email for additional verification
+                "exp": datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            },
+            settings.SECRET_KEY,                     # JWT signing secret
+            algorithm="HS256"                        # HMAC SHA-256 algorithm
         )
+        
         refresh_token = jwt.encode(
-            {"user_id": created_user["id"], "type": "refresh"},
-            settings.SECRET_KEY,
-            algorithm="HS256"
+            {
+                "user_id": created_user["id"],     # User identifier
+                "type": "refresh",                  # Token type for validation
+                "exp": datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+            },
+            settings.SECRET_KEY,                     # JWT signing secret
+            algorithm="HS256"                        # HMAC SHA-256 algorithm
         )
         
         # Return user data without password

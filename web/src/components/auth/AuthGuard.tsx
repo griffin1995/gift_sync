@@ -1,8 +1,51 @@
+/**
+ * GiftSync Authentication Guard Component
+ * 
+ * Provides route-level authentication and authorization for the GiftSync application.
+ * Handles protected routes, authentication redirects, and loading states during
+ * authentication checks. Ensures secure access to user-specific features.
+ * 
+ * Key Features:
+ *   - Automatic authentication checking on route changes
+ *   - Protected route enforcement with redirect logic
+ *   - Public route access for unauthenticated users
+ *   - Authentication route handling (prevent double login)
+ *   - Loading states during authentication verification
+ *   - JWT token validation and refresh
+ * 
+ * Security Features:
+ *   - Server-side authentication validation
+ *   - Secure token storage and management
+ *   - Session timeout handling
+ *   - Unauthorized access prevention
+ *   - Seamless login/logout flow
+ * 
+ * Route Categories:
+ *   - Protected: Require valid authentication
+ *   - Auth: Login/register pages (redirect if logged in)
+ *   - Public: Accessible without authentication
+ * 
+ * Usage:
+ *   <AuthGuard>
+ *     <YourProtectedComponent />
+ *   </AuthGuard>
+ * 
+ * Integration:
+ *   - Works with AuthContext for global auth state
+ *   - Uses Next.js router for navigation
+ *   - Coordinates with PageLoader for UX
+ */
+
 import React, { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { PageLoader } from '@/components/ui/PageLoader';
 
+/**
+ * Props interface for AuthGuard component.
+ * 
+ * @param children - React components to render if authentication check passes
+ */
 interface AuthGuardProps {
   children: ReactNode;
 }

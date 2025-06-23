@@ -1,87 +1,187 @@
 {
+  "_comment": "GiftSync Web Application Configuration",
+  "_description": "Frontend React/Next.js application for the GiftSync gift recommendation platform. Built with TypeScript, Tailwind CSS, and modern React patterns for optimal user experience and developer productivity.",
+  
   "name": "giftsync-web",
   "version": "1.0.0",
-  "description": "GiftSync Web Application - AI-powered gift recommendation platform",
+  "description": "GiftSync Web Application - AI-powered gift recommendation platform with swipe-based discovery",
   "private": true,
+  
+  "_scripts_description": "Development and deployment scripts for the GiftSync web application",
   "scripts": {
     "dev": "next dev",
+    "_dev_comment": "Start development server with hot reloading on localhost:3000",
+    
     "build": "next build",
+    "_build_comment": "Create optimized production build with static generation and code splitting",
+    
     "start": "next start",
+    "_start_comment": "Start production server (requires 'npm run build' first)",
+    
     "lint": "next lint",
+    "_lint_comment": "Run ESLint to check code quality and enforce coding standards",
+    
     "export": "next export",
+    "_export_comment": "Export static site for deployment to CDN or static hosting",
+    
     "type-check": "tsc --noEmit",
+    "_type_check_comment": "Run TypeScript compiler to check types without emitting files",
+    
     "test": "jest",
+    "_test_comment": "Run test suite with Jest and React Testing Library",
+    
     "test:watch": "jest --watch",
+    "_test_watch_comment": "Run tests in watch mode for development",
+    
     "test:coverage": "jest --coverage"
+    "_test_coverage_comment": "Run tests and generate code coverage report"
   },
+  "_dependencies_description": "Production dependencies for GiftSync web application",
   "dependencies": {
+    "_ui_libraries": "Modern React UI and component libraries",
     "@headlessui/react": "^1.7.0",
-    "@heroicons/react": "^2.0.0",
-    "@hookform/resolvers": "^3.3.0",
+    "_headlessui_comment": "Unstyled, accessible UI components (modals, dropdowns, etc.)",
+    "@heroicons/react": "^2.0.0", 
+    "_heroicons_comment": "Beautiful hand-crafted SVG icons by Tailwind team",
+    
+    "_tailwind_ecosystem": "Tailwind CSS framework and official plugins",
     "@tailwindcss/aspect-ratio": "^0.4.2",
-    "@tailwindcss/container-queries": "^0.1.1",
+    "_aspect_ratio_comment": "Utilities for controlling aspect ratios",
+    "@tailwindcss/container-queries": "^0.1.1", 
+    "_container_queries_comment": "CSS container queries for responsive design",
     "@tailwindcss/forms": "^0.5.10",
+    "_forms_comment": "Better default styles for form elements",
     "@tailwindcss/typography": "^0.5.16",
+    "_typography_comment": "Beautiful typography defaults for rich content",
+    "tailwindcss": "^3.3.0",
+    "_tailwindcss_comment": "Utility-first CSS framework for rapid UI development",
+    "autoprefixer": "^10.4.0",
+    "_autoprefixer_comment": "Add vendor prefixes to CSS automatically",
+    "postcss": "^8.4.0",
+    "_postcss_comment": "CSS transformation tool used by Tailwind",
+    
+    "_typescript_support": "TypeScript type definitions",
     "@types/js-cookie": "^3.0.0",
     "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
+    "@types/react": "^18.2.0", 
     "@types/react-dom": "^18.2.0",
-    "@use-gesture/react": "^10.2.0",
-    "autoprefixer": "^10.4.0",
-    "axios": "^1.5.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "cmdk": "^0.2.0",
-    "framer-motion": "^10.16.0",
-    "js-cookie": "^3.0.0",
-    "lucide-react": "^0.290.0",
-    "next": "^14.0.0",
-    "postcss": "^8.4.0",
-    "posthog-js": "^1.255.0",
-    "react": "^18.2.0",
-    "react-confetti": "^6.1.0",
-    "react-dom": "^18.2.0",
-    "react-hook-form": "^7.47.0",
-    "react-hot-toast": "^2.4.0",
-    "react-intersection-observer": "^9.5.0",
-    "react-query": "^3.39.0",
-    "sharp": "^0.32.0",
-    "tailwindcss": "^3.3.0",
     "typescript": "^5.0.0",
-    "zod": "^3.22.0"
+    "_typescript_comment": "TypeScript compiler for type safety and modern JS features",
+    
+    "_react_ecosystem": "React framework and core libraries",
+    "react": "^18.2.0",
+    "_react_comment": "React library for building user interfaces",
+    "react-dom": "^18.2.0",
+    "_react_dom_comment": "React DOM renderer for web applications",
+    "next": "^14.0.0",
+    "_next_comment": "React framework with SSR, routing, and optimization",
+    "sharp": "^0.32.0",
+    "_sharp_comment": "High-performance image processing for Next.js",
+    
+    "_state_and_forms": "State management and form handling",
+    "react-hook-form": "^7.47.0",
+    "_react_hook_form_comment": "Performant forms with easy validation",
+    "@hookform/resolvers": "^3.3.0",
+    "_hookform_resolvers_comment": "Validation resolvers for react-hook-form",
+    "react-query": "^3.39.0",
+    "_react_query_comment": "Data fetching and caching library",
+    "zod": "^3.22.0",
+    "_zod_comment": "TypeScript-first schema validation",
+    
+    "_user_interaction": "Gesture handling and animations",
+    "@use-gesture/react": "^10.2.0",
+    "_use_gesture_comment": "React hooks for gesture recognition (swipe, drag, etc.)",
+    "framer-motion": "^10.16.0",
+    "_framer_motion_comment": "Production-ready motion library for React",
+    
+    "_utilities_and_ui": "Utility libraries and UI enhancements",
+    "class-variance-authority": "^0.7.0",
+    "_cva_comment": "Type-safe component variants with class composition",
+    "clsx": "^2.0.0",
+    "_clsx_comment": "Utility for constructing className strings conditionally", 
+    "cmdk": "^0.2.0",
+    "_cmdk_comment": "Command palette component (search, quick actions)",
+    "js-cookie": "^3.0.0",
+    "_js_cookie_comment": "Simple API for handling browser cookies",
+    "lucide-react": "^0.290.0",
+    "_lucide_comment": "Beautiful and consistent icon pack",
+    
+    "_networking_and_analytics": "HTTP client and user analytics",
+    "axios": "^1.5.0",
+    "_axios_comment": "Promise-based HTTP client for API requests",
+    "posthog-js": "^1.255.0",
+    "_posthog_comment": "Product analytics and feature flagging",
+    
+    "_notifications_and_effects": "User feedback and visual effects",
+    "react-hot-toast": "^2.4.0",
+    "_react_hot_toast_comment": "Smoking hot React notifications",
+    "react-confetti": "^6.1.0",
+    "_react_confetti_comment": "Confetti animation for celebrations",
+    "react-intersection-observer": "^9.5.0"
+    "_intersection_observer_comment": "React hook for Intersection Observer API"
   },
+  "_devDependencies_description": "Development and testing dependencies",
   "devDependencies": {
+    "_testing_framework": "Jest testing framework and React testing utilities",
     "@testing-library/jest-dom": "^6.1.0",
+    "_jest_dom_comment": "Custom Jest matchers for testing DOM elements",
     "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^14.5.0",
+    "_testing_library_react_comment": "Testing utilities for React components",
+    "@testing-library/user-event": "^14.5.0", 
+    "_user_event_comment": "Fire events the same way the user does",
     "@types/jest": "^29.5.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "babel-jest": "^29.7.0",
-    "cssnano": "^7.0.7",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
+    "_types_jest_comment": "TypeScript definitions for Jest",
     "jest": "^29.7.0",
+    "_jest_comment": "JavaScript testing framework with snapshot testing",
     "jest-canvas-mock": "^2.5.0",
+    "_jest_canvas_mock_comment": "Mock canvas API for Jest tests",
     "jest-environment-jsdom": "^29.7.0",
-    "prettier": "^3.0.0"
+    "_jest_jsdom_comment": "Jest environment that simulates browser DOM",
+    "babel-jest": "^29.7.0",
+    "_babel_jest_comment": "Jest plugin for Babel transformations",
+    
+    "_code_quality": "ESLint, Prettier, and TypeScript tooling for code quality",
+    "eslint": "^8.0.0",
+    "_eslint_comment": "Pluggable JavaScript and TypeScript linter",
+    "eslint-config-next": "^14.0.0",
+    "_eslint_next_comment": "ESLint configuration for Next.js projects",
+    "eslint-config-prettier": "^9.0.0",
+    "_eslint_prettier_comment": "Disable ESLint rules that conflict with Prettier",
+    "eslint-plugin-prettier": "^5.0.0",
+    "_eslint_plugin_prettier_comment": "Run Prettier as an ESLint rule",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "_ts_eslint_plugin_comment": "TypeScript-specific ESLint rules",
+    "@typescript-eslint/parser": "^6.0.0",
+    "_ts_eslint_parser_comment": "ESLint parser for TypeScript",
+    "prettier": "^3.0.0",
+    "_prettier_comment": "Opinionated code formatter for consistent style",
+    
+    "_build_optimization": "CSS optimization for production builds", 
+    "cssnano": "^7.0.7"
+    "_cssnano_comment": "PostCSS plugin to optimize and minify CSS"
   },
+  
+  "_engines_description": "Minimum required versions for Node.js and npm",
   "engines": {
     "node": ">=18.0.0",
+    "_node_comment": "Node.js 18+ required for modern JavaScript features and performance",
     "npm": ">=8.0.0"
+    "_npm_comment": "npm 8+ required for package-lock v2 and workspaces support"
   },
+  
+  "_browserslist_description": "Target browsers for CSS autoprefixing and JavaScript transpilation",
   "browserslist": {
     "production": [
       ">0.2%",
-      "not dead",
+      "not dead", 
       "not op_mini all"
     ],
+    "_production_comment": "Support browsers with >0.2% usage, exclude dead browsers and Opera Mini",
     "development": [
       "last 1 chrome version",
-      "last 1 firefox version",
+      "last 1 firefox version", 
       "last 1 safari version"
     ]
+    "_development_comment": "Latest versions of major browsers for development"
   }
 }

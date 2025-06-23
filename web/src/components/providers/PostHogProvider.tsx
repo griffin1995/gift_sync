@@ -1,7 +1,53 @@
+/**
+ * GiftSync PostHog Analytics Provider
+ * 
+ * Provides application-wide analytics tracking using PostHog for user behavior
+ * analysis, feature usage monitoring, and business intelligence. Handles automatic
+ * page view tracking, user identification, and custom event collection.
+ * 
+ * Key Features:
+ *   - Automatic page view tracking on route changes
+ *   - User identification and session management
+ *   - Custom event tracking for business metrics
+ *   - Feature flag integration for A/B testing
+ *   - Privacy-compliant data collection
+ *   - Development/production environment handling
+ * 
+ * Business Intelligence:
+ *   - User journey and funnel analysis
+ *   - Feature adoption and usage patterns
+ *   - Conversion rate optimization
+ *   - A/B test performance tracking
+ *   - Revenue attribution and cohort analysis
+ * 
+ * Privacy Features:
+ *   - GDPR-compliant data collection
+ *   - User consent management
+ *   - Data anonymization options
+ *   - Opt-out functionality
+ *   - Secure data transmission
+ * 
+ * Integration Points:
+ *   - Authentication: User identification
+ *   - E-commerce: Purchase and revenue tracking
+ *   - Feature flags: A/B testing and rollouts
+ *   - Error tracking: Performance monitoring
+ * 
+ * Usage:
+ *   <PostHogProvider>
+ *     <App />
+ *   </PostHogProvider>
+ */
+
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { analytics, trackPageView } from '@/lib/analytics';
 
+/**
+ * Props interface for PostHogProvider component.
+ * 
+ * @param children - React components to wrap with analytics tracking
+ */
 interface PostHogProviderProps {
   children: React.ReactNode;
 }

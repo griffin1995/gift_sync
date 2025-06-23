@@ -1,65 +1,121 @@
 {
+  "_description": "GiftSync TypeScript Configuration - Strict type checking for production-ready React/Next.js development",
+  "_features": [
+    "Strict type checking with comprehensive error detection",
+    "Path mapping for clean imports and better developer experience", 
+    "Next.js optimization with incremental compilation",
+    "Production-ready compiler options for performance and safety",
+    "Testing framework integration with Jest and React Testing Library"
+  ],
+  
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "es6"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
+    // ==========================================================================
+    // COMPILATION TARGET AND LIBRARIES
+    // ==========================================================================
+    "target": "es5",                           // Target ES5 for broad browser compatibility
+    "lib": ["dom", "dom.iterable", "es6"],     // Include DOM APIs and ES6 features
+    
+    // ==========================================================================
+    // JAVASCRIPT INTEGRATION
+    // ==========================================================================
+    "allowJs": true,                           // Allow importing JavaScript files
+    "skipLibCheck": true,                      // Skip type checking of declaration files for faster builds
+    
+    // ==========================================================================
+    // TYPE CHECKING STRICTNESS
+    // ==========================================================================
+    "strict": true,                            // Enable all strict type checking options
+    "forceConsistentCasingInFileNames": true,  // Ensure consistent file name casing
+    
+    // ==========================================================================
+    // OUTPUT AND MODULE SYSTEM
+    // ==========================================================================
+    "noEmit": true,                            // Don't emit files (Next.js handles compilation)
+    "esModuleInterop": true,                   // Enable interoperability between CommonJS and ES modules
+    "module": "esnext",                        // Use latest module system
+    "moduleResolution": "node",                // Use Node.js module resolution
+    "resolveJsonModule": true,                 // Allow importing JSON files
+    "isolatedModules": true,                   // Ensure each file can be safely transpiled
+    
+    // ==========================================================================
+    // JSX AND REACT CONFIGURATION
+    // ==========================================================================
+    "jsx": "preserve",                         // Preserve JSX for Next.js to handle
+    
+    // ==========================================================================
+    // BUILD PERFORMANCE
+    // ==========================================================================
+    "incremental": true,                       // Enable incremental compilation for faster builds
     "plugins": [
       {
-        "name": "next"
+        "name": "next"                         // Next.js TypeScript plugin for enhanced IDE support
       }
     ],
-    "baseUrl": ".",
+    
+    // ==========================================================================
+    // PATH MAPPING FOR CLEAN IMPORTS
+    // ==========================================================================
+    "baseUrl": ".",                            // Set base URL for relative imports
     "paths": {
-      "@/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/pages/*": ["./src/pages/*"],
-      "@/styles/*": ["./src/styles/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/utils/*": ["./src/utils/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/types/*": ["./src/types/*"],
-      "@/api/*": ["./src/api/*"],
-      "@/store/*": ["./src/store/*"],
-      "@/context/*": ["./src/context/*"],
-      "@/config/*": ["./src/config/*"]
+      "@/*": ["./src/*"],                      // Root src directory alias
+      "@/components/*": ["./src/components/*"], // UI components directory
+      "@/pages/*": ["./src/pages/*"],          // Next.js pages directory
+      "@/styles/*": ["./src/styles/*"],        // CSS and styling files
+      "@/lib/*": ["./src/lib/*"],              // Utility libraries and services
+      "@/utils/*": ["./src/utils/*"],          // Helper functions and utilities
+      "@/hooks/*": ["./src/hooks/*"],          // Custom React hooks
+      "@/types/*": ["./src/types/*"],          // TypeScript type definitions
+      "@/api/*": ["./src/api/*"],              // API client and endpoints
+      "@/store/*": ["./src/store/*"],          // State management (Redux/Zustand)
+      "@/context/*": ["./src/context/*"],      // React context providers
+      "@/config/*": ["./src/config/*"]         // Application configuration
     },
-    "types": ["jest", "node", "@testing-library/jest-dom"],
-    "declaration": false,
-    "declarationMap": false,
-    "sourceMap": true,
-    "removeComments": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false
+    
+    // ==========================================================================
+    // TYPE DEFINITIONS
+    // ==========================================================================
+    "types": ["jest", "node", "@testing-library/jest-dom"], // Include type definitions
+    
+    // ==========================================================================
+    // OUTPUT CONFIGURATION
+    // ==========================================================================
+    "declaration": false,                      // Don't generate .d.ts files
+    "declarationMap": false,                   // Don't generate declaration source maps
+    "sourceMap": true,                         // Generate source maps for debugging
+    "removeComments": true,                    // Remove comments from output
+    
+    // ==========================================================================
+    // ADVANCED TYPE CHECKING
+    // ==========================================================================
+    "noUnusedLocals": true,                    // Report errors on unused local variables
+    "noUnusedParameters": true,                // Report errors on unused parameters
+    "exactOptionalPropertyTypes": true,        // Strict optional property checking
+    "noImplicitReturns": true,                 // Report error when not all code paths return a value
+    "noFallthroughCasesInSwitch": true,        // Report errors for fallthrough cases in switch
+    "noUncheckedIndexedAccess": true,          // Add undefined to index signature results
+    "noImplicitOverride": true,                // Require explicit override keywords
+    "allowUnreachableCode": false,             // Report errors on unreachable code
+    "allowUnusedLabels": false                 // Report errors on unused labels
   },
+  
+  // ============================================================================
+  // FILE INCLUSION
+  // ============================================================================
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
+    "next-env.d.ts",                           // Next.js environment types
+    "**/*.ts",                                 // All TypeScript files
+    "**/*.tsx",                                // All TypeScript React files
+    ".next/types/**/*.ts"                      // Next.js generated types
   ],
+  
+  // ============================================================================
+  // FILE EXCLUSION
+  // ============================================================================
   "exclude": [
-    "node_modules",
-    ".next",
-    "out",
-    "dist",
-    "build"
+    "node_modules",                            // Third-party packages
+    ".next",                                   // Next.js build output
+    "out",                                     // Static export output
+    "dist",                                    // Distribution/build folder
+    "build"                                    // Alternative build folder
   ]
 }
