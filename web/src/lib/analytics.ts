@@ -622,4 +622,4 @@ export const trackPageView = (path?: string) => {
 export default analytics;
 
 // Export all public interfaces
-__all__ = ['analytics', 'trackEvent', 'identifyUser', 'trackPageView', 'AnalyticsService']
+// Exported: analytics, trackEvent, identifyUser, trackPageView, AnalyticsService
