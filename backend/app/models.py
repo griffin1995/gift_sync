@@ -132,60 +132,96 @@ class Category(CategoryBase):
 # Integrated with affiliate networks for revenue generation
 class ProductBase(BaseModel):
     """
-    Base product model containing all user-modifiable fields.
+    Enhanced product model with Amazon PA-API integration fields.
     
     Products are the core entities in the GiftSync recommendation system.
     Each product contains comprehensive metadata for ML algorithms and user display.
     
     Price Structure:
-        - price_min/price_max: Support price ranges (e.g., £10-25 for size variants)
+        - price: Current selling price
+        - list_price: Original/MSRP price (for discount calculation)
+        - savings_amount: Absolute savings (list_price - price)
+        - savings_percentage: Percentage discount
         - currency: ISO currency code (GBP, USD, EUR)
-        - Prices stored in lowest denomination (pence, cents)
     
-    Affiliate Integration:
-        - affiliate_url: Direct purchase link with tracking parameters
-        - affiliate_network: Partner network ("amazon", "commission_junction")
-        - commission_rate: Expected commission percentage (0.0-1.0)
+    Amazon Integration:
+        - asin: Amazon Standard Identification Number
+        - parent_asin: Parent ASIN for product variations
+        - is_prime_eligible: Amazon Prime shipping availability
+        - browse_nodes: Amazon category hierarchy
+        - variation_attributes: Product variants (color, size, etc.)
     
-    ML Features:
-        - tags: Searchable keywords for content-based filtering
-        - features: Structured attributes (colour, size, material) for similarity
-        - rating/review_count: Social proof signals for popularity algorithms
+    Enhanced Metadata:
+        - manufacturer: Product manufacturer
+        - model: Product model number
+        - dimensions: Physical dimensions and weight
+        - technical_details: Detailed specifications
+        - additional_images: Multiple product images
+        - review_breakdown: Star rating distribution
+        - sales_rank: Amazon sales ranking
     
     Fields:
         title: Product name/title (required)
         description: Detailed product description
-        price_min: Minimum price (for variants)
-        price_max: Maximum price (for variants)
-        currency: ISO currency code (default: USD)
-        brand: Product brand/manufacturer
+        price: Current selling price
+        list_price: Original/MSRP price
+        savings_amount: Absolute discount amount
+        savings_percentage: Percentage discount
+        currency: ISO currency code (default: GBP)
+        brand: Product brand name
+        manufacturer: Product manufacturer
+        model: Product model number
+        asin: Amazon Standard Identification Number
+        parent_asin: Parent ASIN for variations
         image_url: Primary product image URL
+        additional_images: List of additional image URLs
         affiliate_url: Purchase link with affiliate tracking
         affiliate_network: Partner network identifier
         commission_rate: Expected commission (0.0-1.0)
         category_id: Associated category UUID
         tags: Searchable keyword list
         features: Structured product attributes
+        dimensions: Physical dimensions and weight
+        technical_details: Detailed technical specifications
         rating: Average user rating (1.0-5.0)
         review_count: Number of reviews/ratings
-        availability_status: Stock status ("available", "limited", "out_of_stock")
+        review_breakdown: Star rating distribution
+        availability_status: Stock status
+        is_prime_eligible: Amazon Prime shipping
+        browse_nodes: Amazon category hierarchy
+        variation_attributes: Product variations
+        sales_rank: Amazon sales ranking
     """
     title: str
     description: Optional[str] = None
-    price_min: Optional[float] = None
-    price_max: Optional[float] = None
-    currency: str = "USD"
+    price: Optional[float] = None
+    list_price: Optional[float] = None
+    savings_amount: Optional[float] = None
+    savings_percentage: Optional[float] = None
+    currency: str = "GBP"
     brand: Optional[str] = None
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
+    asin: Optional[str] = None
+    parent_asin: Optional[str] = None
     image_url: Optional[str] = None
+    additional_images: Optional[List[str]] = []
     affiliate_url: Optional[str] = None
-    affiliate_network: Optional[str] = None
+    affiliate_network: Optional[str] = "amazon"
     commission_rate: Optional[float] = None
     category_id: Optional[str] = None
     tags: List[str] = []
     features: Dict[str, Any] = {}
+    dimensions: Optional[Dict[str, Any]] = None
+    technical_details: Optional[Dict[str, Any]] = None
     rating: Optional[float] = None
     review_count: int = 0
+    review_breakdown: Optional[Dict[str, Any]] = None
     availability_status: str = "available"
+    is_prime_eligible: bool = False
+    browse_nodes: Optional[List[Dict[str, Any]]] = []
+    variation_attributes: Optional[Dict[str, Any]] = None
+    sales_rank: Optional[int] = None
 
 class Product(ProductBase):
     """
@@ -944,6 +980,230 @@ class PaginatedResponse(BaseModel):
     page: int
     limit: int
     has_next: bool
+
+# ==============================================================================
+# QUIZ SYSTEM MODELS
+# ==============================================================================
+# Intelligent product discovery through adaptive questioning
+# Comprehensive quiz architecture for enhanced gift recommendations
+
+class QuizQuestionBase(BaseModel):
+    """
+    Base quiz question model for adaptive product discovery.
+    
+    Quiz questions form the foundation of the intelligent recommendation system,
+    capturing user preferences and context for personalized product suggestions.
+    
+    Question Types:
+        - multiple_choice: Predefined options with single selection
+        - range: Numerical range with min/max values (e.g., budget)
+        - scale: Likert-style rating scale (1-5 or 1-10)
+        - boolean: Simple yes/no questions
+        - text: Open-ended text input (processed with NLP)
+    
+    Adaptive Logic:
+        - weight: Question importance for recommendation algorithm (0.1-2.0)
+        - prerequisite_question_id: Only show if prerequisite answered
+        - prerequisite_answer: Required answer to prerequisite
+        - category: Product category this question applies to
+    
+    Fields:
+        question_text: The question displayed to user
+        question_type: Type of question interface
+        category: Product category filter (optional)
+        subcategory: More specific category targeting
+        options: Question-specific options (varies by type)
+        min_value: Minimum value for range questions
+        max_value: Maximum value for range questions
+        weight: Importance for recommendation algorithm
+        prerequisite_question_id: Conditional question dependency
+        prerequisite_answer: Required prerequisite response
+        order_sequence: Default display order
+        is_active: Question availability flag
+    """
+    question_text: str
+    question_type: str  # 'multiple_choice', 'range', 'boolean', 'scale', 'text'
+    category: Optional[str] = None
+    subcategory: Optional[str] = None
+    options: Optional[Dict[str, Any]] = None
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
+    weight: float = 1.0
+    prerequisite_question_id: Optional[str] = None
+    prerequisite_answer: Optional[str] = None
+    order_sequence: int
+    is_active: bool = True
+
+class QuizQuestion(QuizQuestionBase):
+    """
+    Complete quiz question model with database fields.
+    
+    Extends QuizQuestionBase with system-managed fields for question
+    management, analytics, and adaptive algorithm optimization.
+    
+    Additional Fields:
+        id: Unique question identifier (UUID)
+        created_at: Question creation timestamp
+    
+    Usage:
+        - Adaptive selection: Choose most valuable next question
+        - Analytics: Track question performance and user engagement
+        - A/B testing: Compare different question formulations
+    """
+    id: str
+    created_at: datetime
+
+class QuizResponseBase(BaseModel):
+    """
+    Base quiz response model for user answers.
+    
+    Quiz responses capture user preferences and context for the
+    recommendation algorithm. Each response contributes to the
+    user's preference profile and session-specific recommendations.
+    
+    Response Processing:
+        - response_value: Primary answer (string format for all types)
+        - response_metadata: Additional context and confidence signals
+        - Responses are processed differently based on question_type
+    
+    Fields:
+        session_id: Quiz session identifier
+        question_id: Question being answered
+        response_value: User's answer (standardized string format)
+        response_metadata: Additional response context
+    """
+    session_id: str
+    question_id: str
+    response_value: str
+    response_metadata: Dict[str, Any] = {}
+
+class QuizResponse(QuizResponseBase):
+    """
+    Complete quiz response model with tracking fields.
+    
+    Extends QuizResponseBase with system-managed fields for analytics,
+    ML training, and user behavior analysis.
+    
+    Additional Fields:
+        id: Unique response identifier (UUID)
+        user_id: Associated user (optional for anonymous)
+        created_at: Response timestamp
+    
+    Usage:
+        - ML training: User preference learning
+        - Analytics: Question effectiveness and user patterns
+        - Session tracking: Progress and completion rates
+    """
+    id: str
+    user_id: Optional[str] = None
+    created_at: datetime
+
+class QuizRecommendationBase(BaseModel):
+    """
+    Base quiz recommendation model for ML-generated suggestions.
+    
+    Quiz recommendations are generated based on user responses and
+    represent the core output of the intelligent recommendation system.
+    
+    Confidence Scoring:
+        - confidence_score: ML algorithm certainty (0.0-1.0)
+        - Higher scores indicate stronger algorithmic confidence
+        - Used for ranking and filtering recommendations
+    
+    Explainability:
+        - reasoning: Human-readable explanation
+        - quiz_factors: Specific quiz responses that influenced recommendation
+        - rank_position: Position in recommendation list
+    
+    Fields:
+        quiz_session_id: Source quiz session
+        product_id: Recommended product
+        confidence_score: Algorithm confidence (0.0-1.0)
+        reasoning: Explanation for recommendation
+        quiz_factors: Contributing quiz responses
+        rank_position: Position in ranked list
+    """
+    quiz_session_id: str
+    product_id: str
+    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    reasoning: str
+    quiz_factors: Dict[str, Any]
+    rank_position: Optional[int] = None
+
+class QuizRecommendation(QuizRecommendationBase):
+    """
+    Complete quiz recommendation model with tracking fields.
+    
+    Extends QuizRecommendationBase with system-managed fields for
+    analytics, conversion tracking, and algorithm performance.
+    
+    Additional Fields:
+        id: Unique recommendation identifier (UUID)
+        user_id: Target user (optional for anonymous)
+        created_at: Recommendation generation timestamp
+    
+    Usage:
+        - Display recommendations: Present to users
+        - Track performance: Click-through and conversion rates
+        - Algorithm optimization: A/B test different approaches
+    """
+    id: str
+    user_id: Optional[str] = None
+    created_at: datetime
+
+class QuizSessionBase(BaseModel):
+    """
+    Base quiz session model for user interaction tracking.
+    
+    Quiz sessions group related questions and responses for specific
+    recommendation contexts. Sessions enable personalized questioning
+    and context-aware recommendations.
+    
+    Session Types:
+        - discovery: General product exploration
+        - gift_selection: Specific gift-finding session
+        - onboarding: Initial user preference collection
+        - category_exploration: Deep-dive into specific category
+    
+    Fields:
+        session_type: Purpose of the session
+        user_context: Additional session context
+        is_anonymous: Whether session is anonymous
+        started_at: Session start time
+        completed_at: Session completion time (optional)
+        is_completed: Session completion status
+    """
+    session_type: str = "discovery"
+    user_context: Dict[str, Any] = {}
+    is_anonymous: bool = True
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    is_completed: bool = False
+
+class QuizSession(QuizSessionBase):
+    """
+    Complete quiz session model with tracking fields.
+    
+    Extends QuizSessionBase with system-managed fields for session
+    management, analytics, and recommendation generation.
+    
+    Additional Fields:
+        id: Unique session identifier (UUID)
+        user_id: Associated user (optional for anonymous)
+        questions_answered: Number of responses in session
+        total_questions: Estimated total questions
+        confidence_level: Current recommendation confidence
+    
+    Usage:
+        - Session management: Track user progress
+        - Analytics: Completion rates and engagement patterns
+        - Recommendation generation: Context for algorithms
+    """
+    id: str
+    user_id: Optional[str] = None
+    questions_answered: int = 0
+    total_questions: int = 0
+    confidence_level: float = 0.0
 
 # ==============================================================================
 # ERROR RESPONSE MODELS

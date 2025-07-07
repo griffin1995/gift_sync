@@ -88,8 +88,8 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   useEffect(() => {
     if (!isInitialized) return;
     
-    // Don't redirect during logout process
-    if (isLoggingOut) return;
+    // Don't redirect during logout process or loading states
+    if (isLoggingOut || isLoading) return;
 
     const isProtectedRoute = PROTECTED_ROUTES.some(route => 
       currentPath.startsWith(route)
@@ -105,13 +105,16 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
       return;
     }
 
-    // Redirect authenticated users from auth routes
-    if (isAuthRoute && isAuthenticated) {
+    // Redirect authenticated users from auth routes (but be more cautious)
+    if (isAuthRoute && isAuthenticated && !isLoading) {
       const redirectTo = router.query.redirect as string || '/dashboard';
-      router.replace(redirectTo);
+      // Add a small delay to prevent conflicts with login error handling
+      setTimeout(() => {
+        router.replace(redirectTo);
+      }, 100);
       return;
     }
-  }, [isAuthenticated, isInitialized, isLoggingOut, currentPath, router]);
+  }, [isAuthenticated, isInitialized, isLoggingOut, isLoading, currentPath, router]);
 
   // Show loading state while initializing or during redirects
   if (!isInitialized || isLoading) {

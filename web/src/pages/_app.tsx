@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { PostHogProvider } from '@/components/providers/PostHogProvider';
+// import { PostHogProvider } from '@/components/providers/PostHogProvider'; // REMOVED: Causing login interference
 import { PWAManager } from '@/components/pwa/PWAManager';
 import { useMobileOptimizations } from '@/hooks/useMobileOptimizations';
 import '@/styles/globals.css';
@@ -37,14 +37,13 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [mobileOptimizations.isMobile]);
 
   return (
-    <PostHogProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <AuthGuard>
-            <Component {...pageProps} />
-            <PWAManager />
-          </AuthGuard>
-          <Toaster
+    <ThemeProvider>
+      <AuthProvider>
+        <AuthGuard>
+          <Component {...pageProps} />
+          <PWAManager />
+        </AuthGuard>
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 5000,
@@ -74,6 +73,5 @@ export default function App({ Component, pageProps }: AppProps) {
           />
         </AuthProvider>
       </ThemeProvider>
-    </PostHogProvider>
   );
 }

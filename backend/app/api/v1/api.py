@@ -40,11 +40,12 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth,                # Authentication and session management
     users,               # User profile and preferences
-    simple_products,     # Amazon product catalog integration
-    simple_swipes,       # User preference collection
+    products,            # Product catalog with SQLAlchemy models
+    swipes,              # User preference collection with SQLAlchemy models
     recommendations,     # AI-powered gift recommendations
     gift_links,          # Shareable gift links
-    affiliate            # Revenue tracking and analytics
+    affiliate,           # Revenue tracking and analytics
+    quiz                 # Intelligent quiz system for product discovery
 )
 
 # ==============================================================================
@@ -76,14 +77,14 @@ api_router.include_router(
 
 # Product catalog endpoints - Amazon integration, search, categories
 api_router.include_router(
-    simple_products.router, 
+    products.router, 
     prefix="/products", 
     tags=["products"]
 )
 
 # Swipe interaction endpoints - preference collection, session management
 api_router.include_router(
-    simple_swipes.router, 
+    swipes.router, 
     prefix="/swipes", 
     tags=["swipes"]
 )
@@ -107,4 +108,11 @@ api_router.include_router(
     affiliate.router, 
     prefix="/affiliate", 
     tags=["affiliate"]
+)
+
+# Quiz system endpoints - intelligent product discovery through adaptive questioning
+api_router.include_router(
+    quiz.router, 
+    prefix="/quiz", 
+    tags=["quiz"]
 )
