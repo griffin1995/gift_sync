@@ -205,43 +205,43 @@ const NeuralNetwork = () => {
         {/* Enhanced Gradients */}
         <defs>
           <linearGradient id="gradient-0" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="#5A00FF" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#7F3CFF" stopOpacity="0.4" />
           </linearGradient>
           <linearGradient id="gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.6" />
+            <stop offset="0%" stopColor="#5A00FF" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#661FFF" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#7F3CFF" stopOpacity="0.6" />
           </linearGradient>
           <linearGradient id="gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f03dff" stopOpacity="1" />
-            <stop offset="25%" stopColor="#8b5cf6" stopOpacity="0.9" />
-            <stop offset="75%" stopColor="#0ea5e9" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#f03dff" stopOpacity="0.7" />
+            <stop offset="0%" stopColor="#5A00FF" stopOpacity="1" />
+            <stop offset="25%" stopColor="#661FFF" stopOpacity="0.9" />
+            <stop offset="75%" stopColor="#753EFF" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#7F3CFF" stopOpacity="0.7" />
           </linearGradient>
           
           <radialGradient id="nodeGradient">
             <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-            <stop offset="30%" stopColor="#f03dff" stopOpacity="0.9" />
-            <stop offset="70%" stopColor="#8b5cf6" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.6" />
+            <stop offset="30%" stopColor="#5A00FF" stopOpacity="0.9" />
+            <stop offset="70%" stopColor="#661FFF" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#7F3CFF" stopOpacity="0.6" />
           </radialGradient>
           
           <radialGradient id="nodeGlow">
-            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.3" />
-            <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.1" />
+            <stop offset="0%" stopColor="#5A00FF" stopOpacity="0.3" />
+            <stop offset="50%" stopColor="#661FFF" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#753EFF" stopOpacity="0.1" />
           </radialGradient>
           
           <linearGradient id="triangleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.08" />
-            <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.03" />
+            <stop offset="0%" stopColor="#5A00FF" stopOpacity="0.08" />
+            <stop offset="50%" stopColor="#661FFF" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#7F3CFF" stopOpacity="0.03" />
           </linearGradient>
           
           <linearGradient id="triangleStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#5A00FF" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#7F3CFF" stopOpacity="0.2" />
           </linearGradient>
         </defs>
       </svg>
@@ -289,36 +289,39 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
   };
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <div className="h-screen w-full bg-black flex flex-col items-center justify-center px-6 relative overflow-hidden">
       {/* Neural Network Background */}
       <NeuralNetwork />
       
       {/* Subtle overlay for better content readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-slate-800/60 to-slate-900/80 z-10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 z-10" />
 
       {/* Floating Elements */}
       <motion.div
         animate={{ y: [-10, 10, -10] }}
         transition={{ duration: 4, repeat: Infinity }}
-        className="absolute top-20 left-20 bg-primary-500/30 backdrop-blur-sm rounded-full p-3 shadow-lg z-20"
+        className="absolute top-20 left-20 backdrop-blur-sm rounded-full p-3 shadow-lg z-20"
+        style={{ backgroundColor: '#661FFF30' }}
       >
-        <Gift className="w-5 h-5 text-primary-300" />
+        <Gift className="w-5 h-5" style={{ color: '#753EFF' }} />
       </motion.div>
       
       <motion.div
         animate={{ y: [10, -10, 10] }}
         transition={{ duration: 3, repeat: Infinity }}
-        className="absolute top-20 right-20 bg-secondary-500/30 backdrop-blur-sm rounded-full p-3 shadow-lg z-20"
+        className="absolute top-20 right-20 backdrop-blur-sm rounded-full p-3 shadow-lg z-20"
+        style={{ backgroundColor: '#753EFF30' }}
       >
-        <Heart className="w-5 h-5 text-secondary-300" />
+        <Heart className="w-5 h-5" style={{ color: '#7F3CFF' }} />
       </motion.div>
 
       <motion.div
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute bottom-20 left-20 bg-primary-500/30 backdrop-blur-sm rounded-full p-3 shadow-lg z-20"
+        className="absolute bottom-20 left-20 backdrop-blur-sm rounded-full p-3 shadow-lg z-20"
+        style={{ backgroundColor: '#5A00FF30' }}
       >
-        <Sparkles className="w-5 h-5 text-primary-300" />
+        <Sparkles className="w-5 h-5" style={{ color: '#661FFF' }} />
       </motion.div>
 
       {/* Main Content */}
@@ -335,7 +338,7 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
           transition={{ duration: 0.5 }}
           className="flex items-center justify-center gap-3 mb-6"
         >
-          <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(to right, #5A00FF, #7F3CFF)' }}>
             <Gift className="w-6 h-6 text-white" />
           </div>
           <span className="text-2xl font-bold text-white">GiftSync</span>
@@ -345,7 +348,8 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="inline-flex items-center justify-center w-16 h-16 bg-slate-800/50 backdrop-blur-sm text-primary-400 rounded-full mb-6"
+          className="inline-flex items-center justify-center w-16 h-16 backdrop-blur-sm rounded-full mb-6"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', color: '#661FFF' }}
         >
           <Clock className="w-8 h-8" />
         </motion.div>
@@ -353,11 +357,11 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
         {/* Heading */}
         <h1 className="text-3xl lg:text-4xl font-bold text-white mb-4">
           We're making things even{' '}
-          <span className="bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">better</span>
+          <span className="bg-clip-text text-transparent" style={{ background: 'linear-gradient(to right, #661FFF, #7F3CFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>better</span>
         </h1>
 
         {/* Description */}
-        <p className="text-lg text-slate-300 mb-6 leading-relaxed max-w-2xl mx-auto">
+        <p className="text-lg text-gray-300 mb-6 leading-relaxed max-w-2xl mx-auto">
           GiftSync is temporarily offline while we upgrade our AI recommendation engine 
           and add exciting new features. We'll be back soon with an even more magical gift discovery experience!
         </p>
@@ -386,13 +390,18 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 * index }}
-              className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 hover:border-primary-500/50 transition-all"
+              className="backdrop-blur-sm rounded-xl p-4 border transition-all"
+              style={{ 
+                backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+                borderColor: 'rgba(102, 31, 255, 0.3)',
+                '&:hover': { borderColor: '#661FFF' }
+              }}
             >
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-primary-500/20 to-secondary-500/20 text-primary-400 rounded-lg mb-3">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-3" style={{ backgroundColor: 'rgba(90, 0, 255, 0.2)', color: '#661FFF' }}>
                 {feature.icon}
               </div>
               <h3 className="font-semibold text-white mb-1 text-sm">{feature.title}</h3>
-              <p className="text-xs text-slate-400">{feature.description}</p>
+              <p className="text-xs text-gray-400">{feature.description}</p>
             </motion.div>
           ))}
         </div>
@@ -403,16 +412,17 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 max-w-md mx-auto"
+            className="backdrop-blur-sm rounded-xl p-6 border max-w-md mx-auto"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', borderColor: 'rgba(102, 31, 255, 0.3)' }}
           >
-            <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-primary-500/20 to-secondary-500/20 text-primary-400 rounded-lg mb-4">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-4" style={{ backgroundColor: 'rgba(90, 0, 255, 0.2)', color: '#661FFF' }}>
               <Mail className="w-5 h-5" />
             </div>
             
             <h3 className="text-lg font-semibold text-white mb-2">
               Be the first to know
             </h3>
-            <p className="text-slate-400 mb-4 text-sm">
+            <p className="text-gray-400 mb-4 text-sm">
               Get notified as soon as we're back online with exclusive early access to new features.
             </p>
 
@@ -422,8 +432,13 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all text-white"
+                  style={{ 
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+                    border: '1px solid rgba(102, 31, 255, 0.3)',
+                    '&:focus': { borderColor: '#661FFF', boxShadow: '0 0 0 2px rgba(102, 31, 255, 0.2)' }
+                  }}
                   placeholder="Enter your email address"
-                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-white placeholder-slate-400"
                   disabled={isSubmitting}
                 />
               </div>
@@ -433,7 +448,11 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-primary-600 to-secondary-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-primary-700 hover:to-secondary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full text-white px-6 py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ 
+                  background: 'linear-gradient(to right, #5A00FF, #7F3CFF)',
+                  '&:hover': { background: 'linear-gradient(to right, #4A00E0, #6F2CFF)' }
+                }}
               >
                 {isSubmitting ? (
                   <>
@@ -454,7 +473,8 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-green-900/30 border border-green-500/30 rounded-xl p-6 max-w-md mx-auto"
+            className="rounded-xl p-6 max-w-md mx-auto"
+            style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)' }}
           >
             <div className="inline-flex items-center justify-center w-10 h-10 bg-green-500/20 text-green-400 rounded-lg mb-4">
               <Gift className="w-5 h-5" />
@@ -475,10 +495,10 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="mt-6 text-center"
         >
-          <p className="text-sm text-slate-400 mb-3">
+          <p className="text-sm text-gray-400 mb-3">
             Join over 50,000 users who trust GiftSync
           </p>
-          <div className="flex items-center justify-center gap-4 text-xs text-slate-500">
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
             <span>• AI-Powered Recommendations</span>
             <span>• 1M+ Products Curated</span>
             <span>• 95% Satisfaction Rate</span>
@@ -494,7 +514,8 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
         >
           <a
             href="/?alpha=true"
-            className="text-xs text-slate-500 hover:text-primary-400 transition-colors underline"
+            className="text-xs text-gray-500 transition-colors underline"
+            style={{ '&:hover': { color: '#661FFF' } }}
           >
             Developer/Alpha Access
           </a>
