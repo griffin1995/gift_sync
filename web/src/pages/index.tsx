@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { tokenManager } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { appConfig } from '@/config';
+import MaintenanceMode from '@/components/MaintenanceMode';
 import toast from 'react-hot-toast';
 
 export default function HomePage() {
@@ -29,6 +31,11 @@ export default function HomePage() {
   const { logout } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  // Check if maintenance mode is enabled
+  if (appConfig.features.maintenanceMode) {
+    return <MaintenanceMode />;
+  }
 
   // Check authentication status
   useEffect(() => {
