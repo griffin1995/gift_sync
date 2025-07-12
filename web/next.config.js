@@ -293,6 +293,15 @@ const nextConfig = {
   // Configuration for static deployment (S3, CDN)
   
   trailingSlash: true,            // Add trailing slashes for S3 compatibility
+  distDir: 'out',                 // Output directory for static export
+  
+  // Static export configuration
+  ...(process.env.STATIC_EXPORT === 'true' && {
+    output: 'export',
+    images: {
+      unoptimized: true           // Disable image optimization for static export
+    }
+  }),
   
   // ===========================================================================
   // PAGE EXTENSIONS
