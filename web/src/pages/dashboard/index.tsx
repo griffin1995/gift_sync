@@ -16,6 +16,7 @@ import {
   Target,
   Clock,
   Star,
+  HelpCircle,
 } from "lucide-react";
 import { api, tokenManager } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -222,6 +223,12 @@ export default function DashboardPage() {
                   Discover
                 </Link>
                 <Link
+                  href="/quiz"
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  Quiz
+                </Link>
+                <Link
                   href="/dashboard/recommendations"
                   className="text-gray-600 hover:text-primary-600 transition-colors"
                 >
@@ -318,7 +325,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
             <Link
               href="/discover"
@@ -330,6 +337,21 @@ export default function DashboardPage() {
                   <h3 className="font-semibold">Discover Gifts</h3>
                   <p className="text-primary-100 text-sm">
                     Swipe through new products
+                  </p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/quiz"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-6 hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105"
+            >
+              <div className="flex items-center gap-3">
+                <HelpCircle className="w-8 h-8" />
+                <div>
+                  <h3 className="font-semibold">Take Quiz</h3>
+                  <p className="text-purple-100 text-sm">
+                    Answer questions for better recommendations
                   </p>
                 </div>
               </div>

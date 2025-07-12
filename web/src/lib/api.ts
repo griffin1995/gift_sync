@@ -796,6 +796,38 @@ class ApiClient {
     return this.get(endpoints.analytics.dashboard);
   }
 
+  // Quiz system methods
+  async startQuiz(data?: any): Promise<ApiResponse<any>> {
+    return this.post(endpoints.quiz.start, data);
+  }
+
+  async getQuizQuestions(): Promise<ApiResponse<any>> {
+    return this.get(endpoints.quiz.questions);
+  }
+
+  async submitQuizResponse(data: any): Promise<ApiResponse<any>> {
+    return this.post(endpoints.quiz.respond, data);
+  }
+
+  async completeQuiz(data: any): Promise<ApiResponse<any>> {
+    return this.post(endpoints.quiz.complete, data);
+  }
+
+  async getQuizRecommendations(sessionId?: string): Promise<ApiResponse<any>> {
+    const url = sessionId 
+      ? `${endpoints.quiz.recommendations}?session_id=${sessionId}`
+      : endpoints.quiz.recommendations;
+    return this.get(url);
+  }
+
+  async getQuizSessions(): Promise<ApiResponse<any>> {
+    return this.get(endpoints.quiz.sessions);
+  }
+
+  async getQuizSession(id: string): Promise<ApiResponse<any>> {
+    return this.get(endpoints.quiz.sessionById(id));
+  }
+
   // Health check
   async healthCheck(): Promise<ApiResponse<any>> {
     return this.get(endpoints.health);
@@ -840,6 +872,15 @@ export const api = {
   
   // Analytics
   trackEvent: (event: AnalyticsEvent) => apiClient.trackEvent(event),
+  
+  // Quiz System
+  startQuiz: (data?: any) => apiClient.startQuiz(data),
+  getQuizQuestions: () => apiClient.getQuizQuestions(),
+  submitQuizResponse: (data: any) => apiClient.submitQuizResponse(data),
+  completeQuiz: (data: any) => apiClient.completeQuiz(data),
+  getQuizRecommendations: (sessionId?: string) => apiClient.getQuizRecommendations(sessionId),
+  getQuizSessions: () => apiClient.getQuizSessions(),
+  getQuizSession: (id: string) => apiClient.getQuizSession(id),
 };
 
 export default apiClient;
