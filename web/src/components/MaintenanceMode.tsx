@@ -9,33 +9,77 @@ interface MaintenanceModeProps {
 
 // Neural Network Animation Component
 const NeuralNetwork = () => {
-  const [nodes, setNodes] = useState<Array<{id: string, x: number, y: number}>>([]);
-  const [connections, setConnections] = useState<Array<{from: string, to: string}>>([]);
+  const [nodes, setNodes] = useState<Array<{id: string, x: number, y: number, layer: number, size: number}>>([]);
+  const [connections, setConnections] = useState<Array<{from: string, to: string, strength: number}>>([]);
 
   useEffect(() => {
-    // Generate neural network nodes
-    const nodeCount = 25;
-    const newNodes = Array.from({ length: nodeCount }, (_, i) => ({
-      id: `node-${i}`,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-    }));
+    // Generate neural network nodes in layers for more structure
+    const nodeCount = 35;
+    const newNodes = Array.from({ length: nodeCount }, (_, i) => {
+      // Create layered structure with some randomness
+      const layer = Math.floor(i / 7); // 5 layers of 7 nodes each
+      const nodeInLayer = i % 7;
+      
+      return {
+        id: `node-${i}`,
+        x: (layer * 20) + (Math.random() * 15) + 5, // Spread across width with randomness
+        y: (nodeInLayer * 14) + (Math.random() * 10) + 5, // Vertical distribution with randomness
+        layer: layer,
+        size: Math.random() * 0.4 + 0.3 // Varied node sizes
+      };
+    });
 
-    // Generate connections between nearby nodes
-    const newConnections: Array<{from: string, to: string}> = [];
+    // Generate connections with triangular patterns and layer connections
+    const newConnections: Array<{from: string, to: string, strength: number}> = [];
+    
     newNodes.forEach((node, i) => {
+      // Connect to nodes in same layer (horizontal connections)
+      const sameLayerNodes = newNodes.filter((otherNode, j) => {
+        if (i === j) return false;
+        return Math.abs(otherNode.layer - node.layer) === 0 && 
+               Math.abs(otherNode.y - node.y) < 20;
+      });
+      
+      // Connect to next layer nodes (forward connections)
+      const nextLayerNodes = newNodes.filter((otherNode, j) => {
+        if (i === j) return false;
+        return otherNode.layer === node.layer + 1;
+      });
+      
+      // Connect to nearby nodes for triangular patterns
       const nearbyNodes = newNodes.filter((otherNode, j) => {
         if (i === j) return false;
         const distance = Math.sqrt(
           Math.pow(node.x - otherNode.x, 2) + Math.pow(node.y - otherNode.y, 2)
         );
-        return distance < 25; // Connect nodes within 25% distance
+        return distance < 30 && distance > 8; // Connect nodes within range but not too close
+      });
+
+      // Add same layer connections (1-2 per node)
+      sameLayerNodes.slice(0, Math.floor(Math.random() * 2) + 1).forEach(targetNode => {
+        newConnections.push({ 
+          from: node.id, 
+          to: targetNode.id, 
+          strength: Math.random() * 0.8 + 0.4 
+        });
       });
       
-      // Connect to 2-4 nearby nodes
-      const connectionsToMake = Math.min(Math.floor(Math.random() * 3) + 2, nearbyNodes.length);
-      nearbyNodes.slice(0, connectionsToMake).forEach(nearbyNode => {
-        newConnections.push({ from: node.id, to: nearbyNode.id });
+      // Add forward layer connections (2-3 per node)
+      nextLayerNodes.slice(0, Math.floor(Math.random() * 2) + 2).forEach(targetNode => {
+        newConnections.push({ 
+          from: node.id, 
+          to: targetNode.id, 
+          strength: Math.random() * 1.0 + 0.6 
+        });
+      });
+      
+      // Add triangular connections (1-2 per node)
+      nearbyNodes.slice(0, Math.floor(Math.random() * 2) + 1).forEach(targetNode => {
+        newConnections.push({ 
+          from: node.id, 
+          to: targetNode.id, 
+          strength: Math.random() * 0.6 + 0.3 
+        });
       });
     });
 
@@ -44,7 +88,7 @@ const NeuralNetwork = () => {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden opacity-20">
+    <div className="absolute inset-0 overflow-hidden opacity-40">
       <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
         {/* Connections */}
         {connections.map((connection, i) => {
@@ -59,16 +103,60 @@ const NeuralNetwork = () => {
               y1={fromNode.y}
               x2={toNode.x}
               y2={toNode.y}
-              stroke="url(#gradient)"
-              strokeWidth="0.1"
+              stroke={`url(#gradient-${Math.floor(connection.strength * 3)})`}
+              strokeWidth={connection.strength * 0.3}
               initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.6 }}
+              animate={{ 
+                pathLength: 1, 
+                opacity: [0.3, connection.strength, 0.3]
+              }}
               transition={{ 
-                duration: 2, 
-                delay: i * 0.1,
+                duration: 3 + (connection.strength * 2), 
+                delay: i * 0.05,
                 repeat: Infinity,
                 repeatType: "reverse",
-                repeatDelay: 3
+                repeatDelay: 1
+              }}
+            />
+          );
+        })}
+        
+        {/* Triangular Highlights */}
+        {connections.slice(0, 8).map((connection, i) => {
+          const fromNode = nodes.find(n => n.id === connection.from);
+          const toNode = nodes.find(n => n.id === connection.to);
+          if (!fromNode || !toNode) return null;
+          
+          // Find third node to create triangle
+          const thirdNode = nodes.find(n => 
+            n.id !== fromNode.id && n.id !== toNode.id &&
+            connections.some(c => 
+              (c.from === fromNode.id && c.to === n.id) ||
+              (c.from === n.id && c.to === fromNode.id) ||
+              (c.from === toNode.id && c.to === n.id) ||
+              (c.from === n.id && c.to === toNode.id)
+            )
+          );
+          
+          if (!thirdNode) return null;
+          
+          return (
+            <motion.polygon
+              key={`triangle-${i}`}
+              points={`${fromNode.x},${fromNode.y} ${toNode.x},${toNode.y} ${thirdNode.x},${thirdNode.y}`}
+              fill="url(#triangleGradient)"
+              stroke="url(#triangleStroke)"
+              strokeWidth="0.1"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ 
+                opacity: [0, 0.15, 0],
+                scale: [0.8, 1.1, 0.8]
+              }}
+              transition={{ 
+                duration: 6, 
+                delay: i * 0.8,
+                repeat: Infinity,
+                repeatType: "reverse"
               }}
             />
           );
@@ -76,36 +164,85 @@ const NeuralNetwork = () => {
         
         {/* Nodes */}
         {nodes.map((node, i) => (
-          <motion.circle
-            key={node.id}
-            cx={node.x}
-            cy={node.y}
-            r="0.3"
-            fill="url(#nodeGradient)"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.8 }}
-            transition={{ 
-              duration: 0.6, 
-              delay: i * 0.05,
-              repeat: Infinity,
-              repeatType: "reverse",
-              repeatDelay: 4
-            }}
-          />
+          <motion.g key={node.id}>
+            {/* Node glow */}
+            <motion.circle
+              cx={node.x}
+              cy={node.y}
+              r={node.size * 1.5}
+              fill="url(#nodeGlow)"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ 
+                scale: [1, 1.3, 1],
+                opacity: [0.2, 0.6, 0.2]
+              }}
+              transition={{ 
+                duration: 4, 
+                delay: i * 0.1,
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+            />
+            {/* Main node */}
+            <motion.circle
+              cx={node.x}
+              cy={node.y}
+              r={node.size}
+              fill="url(#nodeGradient)"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ 
+                duration: 0.8, 
+                delay: i * 0.03,
+                repeat: Infinity,
+                repeatType: "reverse",
+                repeatDelay: 3
+              }}
+            />
+          </motion.g>
         ))}
         
-        {/* Gradients */}
+        {/* Enhanced Gradients */}
         <defs>
-          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="#0ea5e9" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#f03dff" stopOpacity="0.4" />
+          <linearGradient id="gradient-0" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.4" />
           </linearGradient>
-          <radialGradient id="nodeGradient">
+          <linearGradient id="gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.6" />
+          </linearGradient>
+          <linearGradient id="gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#f03dff" stopOpacity="1" />
-            <stop offset="70%" stopColor="#0ea5e9" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#f03dff" stopOpacity="0.6" />
+            <stop offset="25%" stopColor="#8b5cf6" stopOpacity="0.9" />
+            <stop offset="75%" stopColor="#0ea5e9" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#f03dff" stopOpacity="0.7" />
+          </linearGradient>
+          
+          <radialGradient id="nodeGradient">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+            <stop offset="30%" stopColor="#f03dff" stopOpacity="0.9" />
+            <stop offset="70%" stopColor="#8b5cf6" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.6" />
           </radialGradient>
+          
+          <radialGradient id="nodeGlow">
+            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.3" />
+            <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.1" />
+          </radialGradient>
+          
+          <linearGradient id="triangleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.08" />
+            <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.03" />
+          </linearGradient>
+          
+          <linearGradient id="triangleStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f03dff" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.2" />
+          </linearGradient>
         </defs>
       </svg>
     </div>
