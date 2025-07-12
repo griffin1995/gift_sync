@@ -32,12 +32,6 @@ export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  // Check if maintenance mode is enabled (bypass with alpha parameter)
-  const isAlphaAccess = router.query.alpha === 'true';
-  if (appConfig.features.maintenanceMode && !isAlphaAccess) {
-    return <MaintenanceMode />;
-  }
-
   // Check authentication status
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -78,6 +72,12 @@ export default function HomePage() {
       toast.error('Logout failed. Please try again.');
     }
   };
+
+  // Check if maintenance mode is enabled (bypass with alpha parameter)
+  const isAlphaAccess = router.query.alpha === 'true';
+  if (appConfig.features.maintenanceMode && !isAlphaAccess) {
+    return <MaintenanceMode />;
+  }
 
   const features = [
     {
