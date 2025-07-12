@@ -1,7 +1,7 @@
 {
-  "name": "giftsync-web",
+  "name": "prznt-web",
   "version": "1.0.0",
-  "description": "GiftSync Web Application - AI-powered gift recommendation platform with swipe-based discovery",
+  "description": "prznt Web Application - AI-powered gift recommendation platform with swipe-based discovery",
   "private": true,
   "scripts": {
     "dev": "next dev",

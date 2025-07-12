@@ -341,7 +341,7 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
           <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(to right, #5A00FF, #7F3CFF)' }}>
             <Gift className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-bold text-white">GiftSync</span>
+          <span className="text-2xl font-bold text-white">prznt</span>
         </motion.div>
 
         {/* Maintenance Icon */}
@@ -362,7 +362,7 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
 
         {/* Description */}
         <p className="text-lg text-gray-300 mb-6 leading-relaxed max-w-2xl mx-auto">
-          GiftSync is temporarily offline while we upgrade our AI recommendation engine 
+          prznt is temporarily offline while we upgrade our AI recommendation engine 
           and add exciting new features. We'll be back soon with an even more magical gift discovery experience!
         </p>
 
@@ -483,7 +483,7 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
               You're all set!
             </h3>
             <p className="text-green-400 text-sm">
-              We'll send you an email as soon as GiftSync is back online with exciting new features.
+              We'll send you an email as soon as prznt is back online with exciting new features.
             </p>
           </motion.div>
         )}
@@ -496,7 +496,7 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
           className="mt-6 text-center"
         >
           <p className="text-sm text-gray-400 mb-3">
-            Join over 50,000 users who trust GiftSync
+            Join over 50,000 users who trust prznt
           </p>
           <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
             <span>• AI-Powered Recommendations</span>

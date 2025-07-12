@@ -1,7 +1,7 @@
 /**
- * GiftSync Next.js Configuration
+ * prznt Next.js Configuration
  * 
- * Production-ready Next.js configuration for the GiftSync gift recommendation platform.
+ * Production-ready Next.js configuration for the prznt gift recommendation platform.
  * Optimised for performance, security, and deployment flexibility across development,
  * staging, and production environments.
  * 
@@ -88,11 +88,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'giftsync-prod-assets.s3.amazonaws.com',     // Production asset bucket
+        hostname: 'prznt-prod-assets.s3.amazonaws.com',     // Production asset bucket
       },
       {
         protocol: 'https',
-        hostname: 'giftsync-dev-assets.s3.amazonaws.com',      // Development asset bucket
+        hostname: 'prznt-dev-assets.s3.amazonaws.com',      // Development asset bucket
       },
       
       // Amazon product images (for affiliate links)
@@ -174,7 +174,7 @@ const nextConfig = {
           {
             key: 'Access-Control-Allow-Origin',
             value: process.env.NODE_ENV === 'production' 
-              ? 'https://app.giftsync.com'     // Production domain only
+              ? 'https://prznt.app'     // Production domain only
               : 'http://localhost:3000'        // Development localhost
           },
           {

@@ -1,9 +1,9 @@
 /**
- * GiftSync API Client
+ * prznt API Client
  * 
  * Centralised HTTP client for all backend API communication.
  * Provides type-safe methods for authentication, data fetching,
- * and real-time interactions with the GiftSync backend.
+ * and real-time interactions with the prznt backend.
  * 
  * Key Features:
  *   - Automatic JWT token management with refresh
@@ -207,7 +207,7 @@ class TokenManager {
 // Main HTTP client with authentication and error handling
 
 /**
- * Comprehensive HTTP client for GiftSync API communication.
+ * Comprehensive HTTP client for prznt API communication.
  * 
  * Features:
  *   - Automatic JWT token attachment to requests

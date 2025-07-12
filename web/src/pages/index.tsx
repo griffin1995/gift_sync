@@ -114,7 +114,7 @@ export default function HomePage() {
       name: 'Sarah Johnson',
       role: 'Gift Enthusiast',
       avatar: '/images/testimonials/sarah.jpg',
-      content: 'GiftSync helped me find the perfect birthday gift for my sister. The AI recommendations were spot-on!',
+      content: 'prznt helped me find the perfect birthday gift for my sister. The AI recommendations were spot-on!',
       rating: 5,
     },
     {
@@ -136,21 +136,21 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>GiftSync - AI-Powered Gift Recommendations</title>
+        <title>prznt - AI-Powered Gift Recommendations</title>
         <meta
           name="description"
-          content="Discover perfect gifts with AI. Swipe through products, get personalised recommendations, and create shareable gift links. Make gift-giving effortless with GiftSync."
+          content="Discover perfect gifts with AI. Swipe through products, get personalised recommendations, and create shareable gift links. Make gift-giving effortless with prznt."
         />
         <meta name="keywords" content="gifts, AI recommendations, gift ideas, personalised gifts, gift finder" />
-        <meta property="og:title" content="GiftSync - AI-Powered Gift Recommendations" />
+        <meta property="og:title" content="prznt - AI-Powered Gift Recommendations" />
         <meta
           property="og:description"
           content="Discover perfect gifts with AI. Swipe through products, get personalised recommendations, and create shareable gift links."
         />
         <meta property="og:image" content="/images/og-image.jpg" />
-        <meta property="og:url" content="https://giftsync.com" />
+        <meta property="og:url" content="https://prznt.app" />
         <meta name="twitter:card" content="summary_large_image" />
-        <link rel="canonical" href="https://giftsync.com" />
+        <link rel="canonical" href="https://prznt.app" />
       </Head>
 
       {/* Navigation */}
@@ -162,7 +162,7 @@ export default function HomePage() {
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                 <Gift className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">GiftSync</span>
+              <span className="text-xl font-bold text-gray-900">prznt</span>
             </Link>
 
             {/* Navigation Links */}
@@ -360,7 +360,7 @@ export default function HomePage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Why GiftSync Works Better
+              Why prznt Works Better
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               We've reinvented gift discovery using cutting-edge AI and intuitive design. 
@@ -557,7 +557,7 @@ export default function HomePage() {
               Available Everywhere
             </h2>
             <p className="text-lg text-primary-100 max-w-2xl mx-auto">
-              Access GiftSync on all your devices. Seamless sync across platforms means your preferences travel with you.
+              Access prznt on all your devices. Seamless sync across platforms means your preferences travel with you.
             </p>
           </motion.div>
 
@@ -667,7 +667,7 @@ export default function HomePage() {
                     </div>
                     <div className="absolute -inset-1 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl opacity-20 blur-sm"></div>
                   </div>
-                  <span className="text-2xl font-bold text-white">GiftSync</span>
+                  <span className="text-2xl font-bold text-white">prznt</span>
                 </div>
                 
                 <p className="text-slate-300 mb-8 text-lg leading-relaxed max-w-md">
@@ -782,7 +782,7 @@ export default function HomePage() {
           <div className="border-t border-slate-700/50">
             <div className="max-w-7xl mx-auto px-6 py-8 lg:px-8">
               <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400">
-                <span>&copy; 2025 GiftSync. All rights reserved.</span>
+                <span>&copy; 2025 prznt. All rights reserved.</span>
                 <span>•</span>
                 <div className="flex items-center gap-1">
                   <span>🇬🇧</span>
