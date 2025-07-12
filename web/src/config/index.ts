@@ -144,6 +144,20 @@ export const endpoints = {
   },
   
   // ===========================================================================
+  // QUIZ SYSTEM ENDPOINTS
+  // ===========================================================================
+  // Intelligent questioning system for product discovery
+  quiz: {
+    start: '/api/v1/quiz/start',                                                // POST: Start new quiz session
+    questions: '/api/v1/quiz/questions',                                        // GET: Get quiz questions
+    respond: '/api/v1/quiz/responses',                                          // POST: Submit quiz response
+    complete: '/api/v1/quiz/complete',                                          // POST: Complete quiz session
+    recommendations: '/api/v1/quiz/recommendations',                            // GET: Get quiz-based recommendations
+    sessions: '/api/v1/quiz/sessions',                                          // GET: Get user's quiz sessions
+    sessionById: (id: string) => `/api/v1/quiz/sessions/${id}`,                // GET: Get specific quiz session
+  },
+  
+  // ===========================================================================
   // GIFT LINK SHARING ENDPOINTS
   // ===========================================================================
   // Social sharing and gift link management
@@ -250,6 +264,7 @@ export const appConfig = {
     analytics: true,
     affiliateLinks: true,
     affiliateTracking: true,
+    maintenanceMode: process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true' || false,
     beta: {
       voiceSearch: false,
       arFeatures: false,
