@@ -1,9 +1,0 @@
-name = "giftsync-web"
-compatibility_date = "2025-07-12"
-
-[site]
-bucket = "./out"
-
-[build]
-command = "npm run build:static"
-watch_dir = "src"

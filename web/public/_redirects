@@ -1,0 +1,8 @@
+# Cloudflare Pages redirects
+# Handle SPA routing - redirect all non-file requests to index.html
+/*    /index.html   200
+
+# Legacy redirects
+/app   /dashboard   301
+/login   /auth/login   301
+/register   /auth/register   301
