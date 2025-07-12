@@ -138,31 +138,22 @@ export const WorkingSwipeInterface: React.FC<WorkingSwipeInterfaceProps> = ({
    */
   const fetchProducts = async (retryCount = 0) => {
     try {
-<<<<<<< Updated upstream
+      setError(null); // Clear any previous errors
+      
       // Attempt to fetch real products from backend API
       const response = await fetch('http://localhost:8000/api/v1/products/?limit=5');
       if (response.ok) {
         const products = await response.json();
+        console.log('✅ REAL PRODUCTS LOADED:', products.length, 'products from API');
+        
+        if (!products || products.length === 0) {
+          throw new Error('No products available from API');
+        }
+        
         return products;
       } else {
         throw new Error('Failed to fetch products');
       }
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-=======
-      setError(null); // Clear any previous errors
-      
-      // ✅ VERIFIED: Fetch real products from fixed backend API using Supabase client
-      const response = await api.getProducts({ limit: 5 });
-      const products = response.data || response; // Handle both wrapped and direct responses
-      
-      console.log('✅ REAL PRODUCTS LOADED:', products.length, 'products from API');
-      
-      if (!products || products.length === 0) {
-        throw new Error('No products available from API');
-      }
-      
-      return products;
     } catch (error) {
       console.error(`Failed to fetch products from API (attempt ${retryCount + 1}):`, error);
       
@@ -175,8 +166,6 @@ export const WorkingSwipeInterface: React.FC<WorkingSwipeInterfaceProps> = ({
       
       // Set error state for user feedback
       setError(error.message || 'Failed to load products');
-      
->>>>>>> Stashed changes
       // Fallback to local mock data for development reliability
       console.log('Using mock data fallback due to API failure');
       return [
@@ -344,16 +333,11 @@ export const WorkingSwipeInterface: React.FC<WorkingSwipeInterfaceProps> = ({
    * 
    * @param direction - Swipe direction ('left' for dislike, 'right' for like)
    */
-<<<<<<< Updated upstream
-  const handleSwipe = (direction: 'left' | 'right') => {
-    const currentProduct = products[currentIndex];
-=======
   const handleSwipe = useCallback((direction: 'left' | 'right') => {
     const currentProduct = products[currentIndex];
     if (!currentProduct) return;
     
     console.log(`✅ Swiped ${direction} on:`, currentProduct.title);
->>>>>>> Stashed changes
     
     // TODO: Send swipe data to backend for preference learning
     // await api.recordSwipe(sessionId, {
