@@ -242,6 +242,21 @@ export default function MaintenanceMode({ onSignup }: MaintenanceModeProps) {
             <span>• 95% Satisfaction Rate</span>
           </div>
         </motion.div>
+
+        {/* Alpha Access Link */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="mt-8 text-center"
+        >
+          <a
+            href="/?alpha=true"
+            className="text-xs text-gray-400 hover:text-primary-600 transition-colors underline"
+          >
+            Developer/Alpha Access
+          </a>
+        </motion.div>
       </motion.div>
     </div>
   );

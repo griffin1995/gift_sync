@@ -32,8 +32,9 @@ export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  // Check if maintenance mode is enabled
-  if (appConfig.features.maintenanceMode) {
+  // Check if maintenance mode is enabled (bypass with alpha parameter)
+  const isAlphaAccess = router.query.alpha === 'true';
+  if (appConfig.features.maintenanceMode && !isAlphaAccess) {
     return <MaintenanceMode />;
   }
 
